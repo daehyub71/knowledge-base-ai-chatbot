@@ -605,7 +605,7 @@
 
 ---
 
-## 📋 Week 6: 프론트엔드 개발 (React)
+## 📋 Week 6: 프론트엔드 개발 - Landing Page & Chat (React)
 
 ### React 프로젝트 생성
 - [ ] `frontend/` 디렉토리로 이동
@@ -616,30 +616,44 @@
   - [ ] `npm install axios react-query zustand`
   - [ ] `npm install -D tailwindcss postcss autoprefixer`
   - [ ] `npm install react-router-dom react-markdown`
+  - [ ] `npm install lucide-react` (아이콘)
 
 ### Tailwind CSS 설정
 - [ ] `npx tailwindcss init -p`
 - [ ] `tailwind.config.js` 설정
   - [ ] content 경로 추가 (`./src/**/*.{js,ts,jsx,tsx}`)
+  - [ ] 다크 테마 색상 설정 (UI 디자인 참고)
 - [ ] `src/index.css`에 Tailwind directives 추가
 - [ ] Tailwind 동작 확인
 
-### shadcn/ui 설치 (Optional)
+### shadcn/ui 설치
 - [ ] `npx shadcn-ui@latest init`
 - [ ] 필요한 컴포넌트 설치
   - [ ] `npx shadcn-ui@latest add button`
   - [ ] `npx shadcn-ui@latest add input`
   - [ ] `npx shadcn-ui@latest add card`
+  - [ ] `npx shadcn-ui@latest add tabs`
+  - [ ] `npx shadcn-ui@latest add toggle`
 
 ### 프로젝트 구조 생성
 - [ ] `src/` 하위 디렉토리 생성
-  - [ ] `components/`, `hooks/`, `services/`, `stores/`, `pages/`, `types/`
+  - [ ] `components/layout/` - 레이아웃 컴포넌트
+  - [ ] `components/landing/` - Landing Page 컴포넌트
+  - [ ] `components/chat/` - Chat 컴포넌트
+  - [ ] `components/dashboard/` - Dashboard 컴포넌트
+  - [ ] `components/settings/` - Settings 컴포넌트
+  - [ ] `hooks/`, `services/`, `stores/`, `pages/`, `types/`
 
 ### TypeScript 타입 정의
 - [ ] `src/types/chat.ts` 작성
   - [ ] `Message` 인터페이스 (id, role, content, sources, timestamp)
-  - [ ] `Source` 인터페이스 (title, url, author, updated_at)
+  - [ ] `Source` 인터페이스 (title, url, author, updated_at, source_type)
+  - [ ] `ChatSession` 인터페이스 (id, title, created_at)
   - [ ] `ChatResponse` 인터페이스
+- [ ] `src/types/sync.ts` 작성
+  - [ ] `DataSource` 인터페이스 (type, status, docs_count, last_sync)
+  - [ ] `SyncActivity` 인터페이스 (timestamp, event_type, status, description)
+  - [ ] `SyncStats` 인터페이스
 
 ### Axios API 클라이언트
 - [ ] `src/services/api.ts` 작성
@@ -648,147 +662,377 @@
   - [ ] `sendMessage(query, sessionId)` 함수
   - [ ] `submitFeedback(chatId, rating, comment)` 함수
   - [ ] `fetchStats()` 함수
+  - [ ] `fetchSyncHistory()` 함수
+  - [ ] `testConnection(source, config)` 함수
+  - [ ] `triggerSync(source)` 함수
+  - [ ] `updateSettings(source, settings)` 함수
 
 ### Zustand 상태 관리
 - [ ] `src/stores/chatStore.ts` 작성
-  - [ ] `useChatStore` 생성
-  - [ ] State: messages, sessionId, isLoading
-  - [ ] Actions: addMessage, setLoading, clearMessages
+  - [ ] State: messages, sessionId, chatHistory, isLoading
+  - [ ] Actions: addMessage, setLoading, clearMessages, loadChatHistory
+- [ ] `src/stores/settingsStore.ts` 작성
+  - [ ] State: jiraConfig, confluenceConfig, syncSettings
+  - [ ] Actions: updateJiraConfig, updateConfluenceConfig, updateSyncSettings
 
 ### React Query 설정
 - [ ] `src/main.tsx`에 QueryClientProvider 추가
 - [ ] `src/hooks/useChat.ts` 작성
   - [ ] `useMutation`으로 sendMessage 호출
-  - [ ] 성공 시 messages에 추가
 - [ ] `src/hooks/useFeedback.ts` 작성
   - [ ] `useMutation`으로 submitFeedback 호출
+- [ ] `src/hooks/useSync.ts` 작성
+  - [ ] `useQuery`로 동기화 상태 조회
+  - [ ] `useMutation`으로 동기화 트리거
 
-### 컴포넌트 1: MessageItem
-- [ ] `src/components/MessageItem.tsx` 작성
-  - [ ] Props: message (Message 타입)
-  - [ ] 사용자 메시지 vs 봇 메시지 스타일 구분
-  - [ ] 봇 메시지: react-markdown으로 렌더링
-  - [ ] Tailwind로 스타일링
+---
 
-### 컴포넌트 2: SourceCard
-- [ ] `src/components/SourceCard.tsx` 작성
-  - [ ] Props: source (Source 타입)
-  - [ ] Jira/Confluence 링크, 작성자, 업데이트 시간 표시
-  - [ ] 카드 스타일 (Tailwind)
+### Landing Page 구현 (`/`)
 
-### 컴포넌트 3: FeedbackButtons
-- [ ] `src/components/FeedbackButtons.tsx` 작성
-  - [ ] Props: chatId
+#### Layout 컴포넌트
+- [ ] `src/components/layout/MainLayout.tsx` 작성
+  - [ ] Header (로고, 네비게이션: Features, How It Works, Pricing, Docs)
+  - [ ] "Get Started" 버튼
+  - [ ] Footer (저작권, 링크)
+
+#### HeroSection 컴포넌트
+- [ ] `src/components/landing/HeroSection.tsx` 작성
+  - [ ] 타이틀: "Unlock Your Team's Knowledge Instantly"
+  - [ ] 설명 텍스트
+  - [ ] "Connect Your Workspace" CTA 버튼
+  - [ ] 우측 이미지/그래픽
+  - [ ] 다크 테마 배경
+
+#### FeatureCard 컴포넌트
+- [ ] `src/components/landing/FeatureCard.tsx` 작성
+  - [ ] Props: icon, title, description
+  - [ ] 아이콘, 제목, 설명 표시
+  - [ ] 다크 카드 스타일
+
+#### FeaturesSection 컴포넌트
+- [ ] `src/components/landing/FeaturesSection.tsx` 작성
+  - [ ] "Integrates with your favorite tools" 섹션
+  - [ ] "Powerful Features, Seamlessly Integrated" 타이틀
+  - [ ] 5개 FeatureCard 렌더링:
+    - [ ] Jira & Confluence Integration
+    - [ ] Real-time Incremental Sync
+    - [ ] Smart Deletion Detection
+    - [ ] Secure PAT Authentication
+    - [ ] Cloud & Server Compatible
+
+#### HowItWorks 컴포넌트
+- [ ] `src/components/landing/HowItWorks.tsx` 작성
+  - [ ] "How It Works" 타이틀
+  - [ ] 3단계 설명:
+    - [ ] 1. Connect & Authenticate
+    - [ ] 2. Intelligent Syncing
+    - [ ] 3. Ask Anything
+  - [ ] 아이콘 + 텍스트 레이아웃
+
+#### CTASection 컴포넌트
+- [ ] `src/components/landing/CTASection.tsx` 작성
+  - [ ] "Ready to Supercharge Your Team's Productivity?"
+  - [ ] 설명 텍스트
+  - [ ] "Try KnowledgeBot AI Free" 버튼
+  - [ ] 배경 그라데이션
+
+#### LandingPage 페이지
+- [ ] `src/pages/LandingPage.tsx` 작성
+  - [ ] MainLayout 래핑
+  - [ ] HeroSection, FeaturesSection, HowItWorks, CTASection 조합
+
+---
+
+### Chat Page 구현 (`/chat`)
+
+#### ChatLayout 컴포넌트
+- [ ] `src/components/layout/ChatLayout.tsx` 작성
+  - [ ] 좌측 사이드바 + 메인 컨텐츠 영역 레이아웃
+  - [ ] 다크 테마 배경
+
+#### ChatSidebar 컴포넌트
+- [ ] `src/components/chat/ChatSidebar.tsx` 작성
+  - [ ] 로고/제목 ("Knowledge AI")
+  - [ ] "New Chat" 버튼 (파란색)
+  - [ ] 검색 입력 필드 ("Search history...")
+  - [ ] 채팅 기록 목록
+  - [ ] 하단: Settings, Help & FAQ 링크
+
+#### ChatHistory 컴포넌트
+- [ ] `src/components/chat/ChatHistory.tsx` 작성
+  - [ ] 채팅 세션 목록 렌더링
+  - [ ] 각 항목: 아이콘 + 제목 (말줄임)
+  - [ ] 활성 채팅 하이라이트
+  - [ ] 클릭 시 채팅 전환
+
+#### MessageItem 컴포넌트
+- [ ] `src/components/chat/MessageItem.tsx` 작성
+  - [ ] Props: message, isUser
+  - [ ] AI 메시지: 좌측 정렬, 아바타, 다크 배경
+  - [ ] 사용자 메시지: 우측 정렬, 파란색 배경
+  - [ ] react-markdown으로 AI 답변 렌더링
+
+#### SourceCard 컴포넌트
+- [ ] `src/components/chat/SourceCard.tsx` 작성
+  - [ ] Props: source (title, url, source_type)
+  - [ ] Jira 이슈: 체크 아이콘, 이슈 키 표시
+  - [ ] Confluence 페이지: 문서 아이콘, 페이지 제목 표시
+  - [ ] 클릭 시 URL 링크
+
+#### FeedbackButtons 컴포넌트
+- [ ] `src/components/chat/FeedbackButtons.tsx` 작성
   - [ ] 👍/👎 버튼
-  - [ ] 클릭 시 useFeedback.mutate() 호출
-  - [ ] 피드백 제출 후 버튼 비활성화
+  - [ ] 클릭 시 API 호출
+  - [ ] 제출 후 상태 표시
 
-### 컴포넌트 4: MessageList
-- [ ] `src/components/MessageList.tsx` 작성
-  - [ ] Props: messages
+#### MessageList 컴포넌트
+- [ ] `src/components/chat/MessageList.tsx` 작성
   - [ ] messages.map()으로 MessageItem 렌더링
-  - [ ] 각 봇 메시지에 SourceCard, FeedbackButtons 포함
-  - [ ] 스크롤 자동 하단 이동
+  - [ ] AI 메시지에 SourceCard 목록 포함
+  - [ ] AI 메시지에 FeedbackButtons 포함
+  - [ ] 자동 스크롤
 
-### 컴포넌트 5: ChatInterface
-- [ ] `src/components/ChatInterface.tsx` 작성
-  - [ ] State: inputValue
+#### ChatInput 컴포넌트
+- [ ] `src/components/chat/ChatInput.tsx` 작성
+  - [ ] 입력 필드 ("Ask anything...")
+  - [ ] 전송 버튼 (파란색 화살표)
+  - [ ] Enter 키 전송 지원
+  - [ ] 로딩 상태 표시
+
+#### ChatInterface 컴포넌트
+- [ ] `src/components/chat/ChatInterface.tsx` 작성
+  - [ ] 채팅 제목 헤더
+  - [ ] 공유/삭제 버튼
   - [ ] MessageList 컴포넌트
-  - [ ] 입력 폼 (input + 전송 버튼)
-  - [ ] useChat 훅 사용
-  - [ ] 전송 버튼 클릭 시 sendMessage
-  - [ ] 로딩 중 버튼 비활성화
-  - [ ] 반응형 레이아웃 (mobile-friendly)
+  - [ ] ChatInput 컴포넌트
 
-### 페이지 1: HomePage
-- [ ] `src/pages/HomePage.tsx` 작성
-  - [ ] ChatInterface 컴포넌트 렌더링
-  - [ ] 헤더 (제목, 로고)
-  - [ ] 레이아웃 설정
+#### ChatPage 페이지
+- [ ] `src/pages/ChatPage.tsx` 작성
+  - [ ] ChatLayout 래핑
+  - [ ] ChatSidebar + ChatInterface 조합
+
+---
 
 ### 환경 변수 설정
 - [ ] `frontend/.env` 파일 생성
   - [ ] `VITE_API_BASE_URL=http://localhost:8000`
 
+### 라우팅 설정
+- [ ] `src/App.tsx` 작성
+  - [ ] React Router 설정
+  - [ ] `/` → LandingPage
+  - [ ] `/chat` → ChatPage
+  - [ ] `/dashboard` → DashboardPage (Week 7)
+  - [ ] `/settings` → SettingsPage (Week 7)
+
 ### 로컬 개발 서버 실행
 - [ ] `npm run dev`
 - [ ] `http://localhost:5173` 접속
-- [ ] 채팅 인터페이스 동작 확인
-  - [ ] 메시지 전송
-  - [ ] 응답 받기
-  - [ ] 출처 표시
+- [ ] Landing Page 동작 확인
+  - [ ] 모든 섹션 표시
+  - [ ] "Get Started" 버튼 → `/chat` 이동
+- [ ] Chat Page 동작 확인
+  - [ ] 사이드바 채팅 목록
+  - [ ] 메시지 전송/응답
+  - [ ] 출처 카드 표시
   - [ ] 피드백 버튼
 
 ### Week 6 마무리
 - [ ] 코드 리뷰 및 리팩토링
 - [ ] 컴포넌트 테스트 작성 (Vitest, optional)
 - [ ] 반응형 디자인 확인 (모바일, 태블릿)
-- [ ] Git 커밋 (`Week 6 완료: React 프론트엔드`)
+- [ ] Git 커밋 (`Week 6 완료: Landing Page & Chat`)
 
 ---
 
-## 📋 Week 7: 통계 대시보드 (관리자용)
-
-### Stats API 훅
-- [ ] `src/hooks/useStats.ts` 작성
-  - [ ] `useQuery`로 fetchStats 호출
-  - [ ] 5초마다 자동 갱신 (refetchInterval)
-
-### 컴포넌트: StatsBoard
-- [ ] `src/components/StatsBoard.tsx` 작성
-  - [ ] useStats 훅 사용
-  - [ ] 카드 레이아웃으로 통계 표시
-    - [ ] 총 문서 수
-    - [ ] 총 청크 수
-    - [ ] Jira 이슈 수
-    - [ ] Confluence 페이지 수
-    - [ ] 마지막 동기화 시간
-    - [ ] 오늘 채팅 수
-    - [ ] RAG 응답 비율
-    - [ ] 평균 피드백 점수
+## 📋 Week 7: Dashboard & Settings 페이지
 
 ### 차트 라이브러리 설치
-- [ ] Chart.js 또는 Recharts 선택
-- [ ] `npm install recharts` (또는 chart.js)
-- [ ] `src/components/ResponseTypeChart.tsx` 작성
-  - [ ] RAG vs LLM Fallback 비율 파이 차트
-- [ ] `src/components/FeedbackChart.tsx` 작성
-  - [ ] 긍정/부정 피드백 비율 바 차트
+- [ ] `npm install recharts` (라인 차트, 바 차트 지원)
 
-### 페이지 2: AdminPage
-- [ ] `src/pages/AdminPage.tsx` 작성
-  - [ ] StatsBoard 컴포넌트
-  - [ ] ResponseTypeChart 컴포넌트
-  - [ ] FeedbackChart 컴포넌트
-  - [ ] 레이아웃 (Grid)
+---
 
-### 라우팅 설정
-- [ ] `src/App.tsx` 작성
-  - [ ] React Router 설정
-  - [ ] `/` → HomePage
-  - [ ] `/admin/stats` → AdminPage
-- [ ] 네비게이션 메뉴 추가
-  - [ ] 헤더에 링크 (홈, 통계)
+### Dashboard Page 구현 (`/dashboard`)
 
-### 통계 API 추가 엔드포인트 (Optional)
-- [ ] `GET /api/stats/daily` - 일별 채팅 수
-- [ ] `GET /api/stats/feedback` - 피드백 통계
-- [ ] 프론트엔드에서 호출하여 차트 데이터 구성
+#### AdminLayout 컴포넌트
+- [ ] `src/components/layout/AdminLayout.tsx` 작성
+  - [ ] 상단 네비게이션 (Dashboard, Data Sources, Settings, Logs, Chat help)
+  - [ ] 프로필 아이콘
+  - [ ] 다크 테마 배경
 
-### 관리자 페이지 접근 제어 (Optional)
-- [ ] 간단한 비밀번호 입력 페이지
-- [ ] localStorage에 저장
-- [ ] 접근 시 체크
+#### StatCard 컴포넌트
+- [ ] `src/components/dashboard/StatCard.tsx` 작성
+  - [ ] Props: label, value, change (증감률), status
+  - [ ] 4가지 변형:
+    - [ ] Overall Sync Status (Healthy/Error 뱃지)
+    - [ ] Total Documents Synced (숫자 + 증감률)
+    - [ ] Last Successful Sync (시간)
+    - [ ] Next Scheduled Sync (시간)
+  - [ ] 다크 카드 스타일
+
+#### AlertBanner 컴포넌트
+- [ ] `src/components/dashboard/AlertBanner.tsx` 작성
+  - [ ] Props: type (error/warning/info), title, message, linkText, linkHref
+  - [ ] 에러 배너 스타일 (빨간색 테두리)
+  - [ ] "View Full Logs" 링크
+  - [ ] 닫기 버튼 (optional)
+
+#### DataSourceCard 컴포넌트
+- [ ] `src/components/dashboard/DataSourceCard.tsx` 작성
+  - [ ] Props: source (jira/confluence), status, docsCount, lastSync
+  - [ ] 로고 이미지 (Jira/Confluence)
+  - [ ] 상태 표시 (Healthy: 초록색, Error: 빨간색)
+  - [ ] 동기화된 문서 수
+  - [ ] 마지막 동기화 시간
+
+#### SyncChart 컴포넌트
+- [ ] `src/components/dashboard/SyncChart.tsx` 작성
+  - [ ] Recharts LineChart 사용
+  - [ ] Props: data (7일간 동기화 데이터)
+  - [ ] X축: 날짜, Y축: 문서 수
+  - [ ] 다크 테마 스타일 (녹색 라인)
+  - [ ] 그라데이션 배경
+
+#### SyncActivityTable 컴포넌트
+- [ ] `src/components/dashboard/SyncActivityTable.tsx` 작성
+  - [ ] Props: activities (배열)
+  - [ ] 컬럼: Timestamp, Event Type, Status, Description
+  - [ ] Status 뱃지 (Success: 초록, Failed: 빨강, In Progress: 노랑)
+  - [ ] 페이지네이션 (optional)
+  - [ ] 다크 테이블 스타일
+
+#### DashboardHeader 컴포넌트
+- [ ] `src/components/dashboard/DashboardHeader.tsx` 작성
+  - [ ] 타이틀: "Data Synchronization Dashboard"
+  - [ ] 설명 텍스트
+  - [ ] "Refresh Status" 버튼
+  - [ ] "Sync Now" 버튼 (주황색)
+
+#### DashboardPage 페이지
+- [ ] `src/pages/DashboardPage.tsx` 작성
+  - [ ] AdminLayout 래핑
+  - [ ] DashboardHeader
+  - [ ] StatCard 4개 (그리드 레이아웃)
+  - [ ] AlertBanner (에러 있을 때만)
+  - [ ] Data Sources 섹션 (2개 카드)
+  - [ ] SyncChart
+  - [ ] SyncActivityTable
+
+### Dashboard API 훅
+- [ ] `src/hooks/useDashboard.ts` 작성
+  - [ ] `useQuery`로 대시보드 데이터 조회
+  - [ ] 30초마다 자동 갱신
+- [ ] `src/hooks/useSyncTrigger.ts` 작성
+  - [ ] `useMutation`으로 수동 동기화 트리거
+
+---
+
+### Settings Page 구현 (`/settings`)
+
+#### AdminSidebar 컴포넌트
+- [ ] `src/components/settings/AdminSidebar.tsx` 작성
+  - [ ] 로고 ("Admin Panel" + "AI Chatbot System")
+  - [ ] 메뉴 목록:
+    - [ ] Dashboard (아이콘)
+    - [ ] Data Sources (활성 상태)
+    - [ ] Settings (아이콘)
+    - [ ] Analytics (아이콘)
+  - [ ] Logout 버튼 (하단)
+  - [ ] 활성 메뉴 하이라이트
+
+#### ConnectionStatus 컴포넌트
+- [ ] `src/components/settings/ConnectionStatus.tsx` 작성
+  - [ ] Props: status (connected/error/pending)
+  - [ ] 아이콘 + 텍스트 ("Connection Status")
+  - [ ] 상태 뱃지 (Error: 빨강)
+
+#### ConnectionSettings 컴포넌트
+- [ ] `src/components/settings/ConnectionSettings.tsx` 작성
+  - [ ] Props: source (jira/confluence), config, onUpdate
+  - [ ] Instance Type: Cloud/Server 라디오 버튼
+  - [ ] URL 입력 필드
+  - [ ] Personal Access Token (PAT) 입력 필드 (마스킹)
+    - [ ] 눈 아이콘으로 토글
+  - [ ] "Test Connection" 버튼
+  - [ ] 연결 테스트 결과 표시
+
+#### SyncRules 컴포넌트
+- [ ] `src/components/settings/SyncRules.tsx` 작성
+  - [ ] Incremental Sync 토글 스위치
+    - [ ] 설명: "Only sync new or updated documents"
+  - [ ] Sync Frequency 드롭다운
+    - [ ] 옵션: Every 6 hours, Every 12 hours, Every 24 hours, Manual only
+  - [ ] Last Synced 정보 표시
+  - [ ] "Sync Now" 버튼 (보라색)
+
+#### DataSourceTabs 컴포넌트
+- [ ] `src/components/settings/DataSourceTabs.tsx` 작성
+  - [ ] 탭: Jira | Confluence
+  - [ ] 활성 탭 하이라이트 (파란색 밑줄)
+  - [ ] 탭 전환 시 설정 폼 변경
+
+#### SettingsPage 페이지
+- [ ] `src/pages/SettingsPage.tsx` 작성
+  - [ ] 2컬럼 레이아웃 (사이드바 + 메인)
+  - [ ] AdminSidebar
+  - [ ] 메인 영역:
+    - [ ] 타이틀: "Data Source Management"
+    - [ ] 설명 텍스트
+    - [ ] "Save Changes" 버튼 (우상단)
+    - [ ] AlertBanner (Sync Failed 에러)
+    - [ ] DataSourceTabs
+    - [ ] ConnectionStatus
+    - [ ] ConnectionSettings
+    - [ ] SyncRules
+
+### Settings API 훅
+- [ ] `src/hooks/useSettings.ts` 작성
+  - [ ] `useQuery`로 현재 설정 조회
+  - [ ] `useMutation`으로 설정 저장
+- [ ] `src/hooks/useConnectionTest.ts` 작성
+  - [ ] `useMutation`으로 연결 테스트
+
+---
+
+### 백엔드 API 추가 (Dashboard/Settings 지원)
+
+#### Dashboard 엔드포인트
+- [ ] `GET /api/dashboard/stats` - 대시보드 통계
+  - [ ] total_documents, jira_count, confluence_count
+  - [ ] sync_status (healthy/error)
+  - [ ] last_sync, next_sync
+- [ ] `GET /api/dashboard/sync-history` - 동기화 이력
+  - [ ] 최근 7일 동기화 데이터 (차트용)
+  - [ ] 최근 동기화 활동 목록 (테이블용)
+- [ ] `POST /api/dashboard/sync` - 수동 동기화 트리거
+
+#### Settings 엔드포인트
+- [ ] `GET /api/settings/data-sources` - 데이터 소스 설정 조회
+- [ ] `PUT /api/settings/data-sources/:source` - 데이터 소스 설정 저장
+- [ ] `POST /api/settings/test-connection` - 연결 테스트
+  - [ ] Request: { source, url, token }
+  - [ ] Response: { success, message }
+
+---
 
 ### 로컬 테스트
-- [ ] `/admin/stats` 페이지 접속
-- [ ] 통계 정보 표시 확인
-- [ ] 차트 렌더링 확인
+- [ ] Dashboard 페이지 (`/dashboard`) 접속
+  - [ ] 통계 카드 4개 표시 확인
+  - [ ] Data Sources 카드 표시
+  - [ ] 동기화 차트 렌더링
+  - [ ] 활동 테이블 표시
+  - [ ] "Sync Now" 버튼 동작
+- [ ] Settings 페이지 (`/settings`) 접속
+  - [ ] Jira/Confluence 탭 전환
+  - [ ] 설정 입력 폼 동작
+  - [ ] "Test Connection" 버튼 동작
+  - [ ] "Save Changes" 저장 확인
 
 ### Week 7 마무리
 - [ ] 코드 리뷰 및 리팩토링
-- [ ] 통계 대시보드 디자인 개선
-- [ ] Git 커밋 (`Week 7 완료: 통계 대시보드`)
+- [ ] Dashboard/Settings 디자인 개선
+- [ ] 반응형 디자인 확인
+- [ ] Git 커밋 (`Week 7 완료: Dashboard & Settings`)
 
 ---
 

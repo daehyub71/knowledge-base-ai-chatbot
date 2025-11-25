@@ -402,23 +402,119 @@ app = workflow.compile()
 
 ## 8. 프론트엔드 구조 (React)
 
-### 8.1 페이지 구조
-- `/` - 메인 채팅 인터페이스
-- `/admin/stats` - 통계 대시보드 (관리자용)
+### 8.1 페이지 구조 (4페이지)
+- `/` - **Landing Page**: 서비스 소개 및 마케팅 페이지
+- `/chat` - **Chat**: 메인 채팅 인터페이스
+- `/dashboard` - **Dashboard**: 데이터 동기화 모니터링 대시보드
+- `/settings` - **Settings**: 데이터 소스 관리 (Jira/Confluence 설정)
 
-### 8.2 주요 컴포넌트
+### 8.2 페이지별 상세 구성
+
+#### 8.2.1 Landing Page (`/`)
+- **Hero Section**: 타이틀, 설명, CTA 버튼 ("Connect Your Workspace")
+- **Integration Icons**: Jira, Confluence 로고
+- **Features Section**: 5개 기능 카드
+  - Jira & Confluence Integration
+  - Real-time Incremental Sync
+  - Smart Deletion Detection
+  - Secure PAT Authentication
+  - Cloud & Server Compatible
+- **How It Works**: 3단계 설명 (Connect → Sync → Ask)
+- **CTA Section**: "Try KnowledgeBot AI Free" 버튼
+- **Footer**: 저작권, Terms, Privacy, Support 링크
+
+#### 8.2.2 Chat Page (`/chat`)
+- **Left Sidebar**:
+  - 로고/제목 ("Knowledge AI")
+  - New Chat 버튼
+  - 검색 필드 (Search history)
+  - 대화 목록 (채팅 기록)
+  - Settings, Help & FAQ 링크
+- **Main Chat Area**:
+  - 대화 제목 (현재 채팅 주제)
+  - 메시지 목록 (AI/사용자 구분)
+  - 출처 카드 (Jira 이슈/Confluence 페이지 링크)
+  - 피드백 버튼 (👍/👎)
+  - 입력 필드 ("Ask anything...")
+
+#### 8.2.3 Dashboard Page (`/dashboard`)
+- **Header Navigation**: Dashboard, Data Sources, Settings, Logs, Chat help
+- **Overview Cards** (4개):
+  - Overall Sync Status (Healthy/Error)
+  - Total Documents Synced (숫자 + 증감률)
+  - Last Successful Sync (시간)
+  - Next Scheduled Sync (시간)
+- **Alert Banner**: 에러 발생 시 경고 메시지 ("Action Required")
+- **Data Sources Section**: Jira/Confluence 상태 카드
+  - 상태 표시 (Healthy/Error)
+  - 동기화된 문서 수
+  - 마지막 동기화 시간
+- **Sync Chart**: 최근 7일 동기화 추이 (라인 차트)
+- **Recent Sync Activity Table**: 타임스탬프, 이벤트 타입, 상태, 설명
+
+#### 8.2.4 Settings Page (`/settings`)
+- **Left Sidebar**: Admin Panel 메뉴
+  - Dashboard, Data Sources, Settings, Analytics, Logout
+- **Data Source Management**:
+  - 탭: Jira | Confluence
+  - Connection Status 표시기
+  - Connection Settings:
+    - Instance Type (Cloud/Server 라디오 버튼)
+    - URL 입력 필드
+    - Personal Access Token (PAT) 입력 필드
+    - Test Connection 버튼
+  - Synchronization Rules:
+    - Incremental Sync 토글
+    - Sync Frequency 드롭다운 (Every 24 hours, etc.)
+    - Last Synced 정보
+    - Sync Now 버튼
+  - Save Changes 버튼
+
+### 8.3 주요 컴포넌트
+
+#### Layout 컴포넌트
+- **MainLayout**: 공통 레이아웃 (Header, Footer)
+- **AdminLayout**: 관리자 페이지 레이아웃 (Sidebar 포함)
+- **ChatLayout**: 채팅 페이지 레이아웃 (Left Sidebar + Main Area)
+
+#### Landing Page 컴포넌트
+- **HeroSection**: 메인 타이틀, 설명, CTA
+- **FeatureCard**: 기능 설명 카드
+- **HowItWorks**: 단계별 설명
+- **CTASection**: 행동 유도 섹션
+
+#### Chat 컴포넌트
+- **ChatSidebar**: 좌측 사이드바 (채팅 목록)
+- **ChatHistory**: 채팅 기록 목록
 - **ChatInterface**: 메인 채팅 UI
 - **MessageList**: 메시지 목록
-- **MessageItem**: 개별 메시지 (사용자/봇)
-- **SourceCard**: 참고 문서 카드
-- **FeedbackButtons**: 👍/👎 버튼
-- **StatsBoard**: 통계 대시보드
+- **MessageItem**: 개별 메시지 (AI/사용자)
+- **SourceCard**: 출처 문서 카드 (Jira/Confluence)
+- **FeedbackButtons**: 👍/👎 피드백 버튼
+- **ChatInput**: 메시지 입력 필드
 
-### 8.3 주요 기능
-- 실시간 채팅
-- 출처 표시 (Jira/Confluence 링크)
+#### Dashboard 컴포넌트
+- **StatCard**: 통계 카드 (숫자 + 라벨)
+- **AlertBanner**: 에러/경고 배너
+- **DataSourceCard**: Jira/Confluence 상태 카드
+- **SyncChart**: 동기화 추이 차트
+- **SyncActivityTable**: 동기화 활동 테이블
+
+#### Settings 컴포넌트
+- **AdminSidebar**: 관리자 사이드바 메뉴
+- **ConnectionSettings**: 연결 설정 폼
+- **SyncRules**: 동기화 규칙 설정
+- **ConnectionStatus**: 연결 상태 표시기
+
+### 8.4 주요 기능
+- 실시간 채팅 및 AI 응답
+- 출처 표시 (Jira 이슈/Confluence 페이지 링크)
 - 피드백 시스템 (👍/👎)
-- 세션 관리 (localStorage)
+- 채팅 기록 관리 및 검색
+- 데이터 소스 연결 설정 (Jira/Confluence)
+- 동기화 상태 모니터링
+- 동기화 스케줄 설정
+- 수동 동기화 트리거
 
 ---
 
@@ -540,15 +636,54 @@ knowledge-base-ai-chatbot/
 ├── frontend/
 │   ├── src/
 │   │   ├── components/
+│   │   │   ├── layout/            # 레이아웃 컴포넌트
+│   │   │   │   ├── MainLayout.tsx
+│   │   │   │   ├── AdminLayout.tsx
+│   │   │   │   ├── ChatLayout.tsx
+│   │   │   │   └── Header.tsx
+│   │   │   ├── landing/           # Landing Page 컴포넌트
+│   │   │   │   ├── HeroSection.tsx
+│   │   │   │   ├── FeatureCard.tsx
+│   │   │   │   ├── HowItWorks.tsx
+│   │   │   │   └── CTASection.tsx
+│   │   │   ├── chat/              # Chat 컴포넌트
+│   │   │   │   ├── ChatSidebar.tsx
+│   │   │   │   ├── ChatHistory.tsx
+│   │   │   │   ├── ChatInterface.tsx
+│   │   │   │   ├── MessageList.tsx
+│   │   │   │   ├── MessageItem.tsx
+│   │   │   │   ├── SourceCard.tsx
+│   │   │   │   ├── FeedbackButtons.tsx
+│   │   │   │   └── ChatInput.tsx
+│   │   │   ├── dashboard/         # Dashboard 컴포넌트
+│   │   │   │   ├── StatCard.tsx
+│   │   │   │   ├── AlertBanner.tsx
+│   │   │   │   ├── DataSourceCard.tsx
+│   │   │   │   ├── SyncChart.tsx
+│   │   │   │   └── SyncActivityTable.tsx
+│   │   │   └── settings/          # Settings 컴포넌트
+│   │   │       ├── AdminSidebar.tsx
+│   │   │       ├── ConnectionSettings.tsx
+│   │   │       ├── SyncRules.tsx
+│   │   │       └── ConnectionStatus.tsx
 │   │   ├── hooks/
 │   │   ├── services/
 │   │   ├── stores/
 │   │   ├── pages/
+│   │   │   ├── LandingPage.tsx
+│   │   │   ├── ChatPage.tsx
+│   │   │   ├── DashboardPage.tsx
+│   │   │   └── SettingsPage.tsx
 │   │   └── types/
 │   ├── public/
 │   ├── package.json
 │   └── vite.config.ts
 ├── docs/
+│   ├── stitch/                    # UI 디자인 목업
+│   │   ├── landing_page.png
+│   │   ├── chat.png
+│   │   ├── dashboard.png
+│   │   └── setting.png
 │   ├── API.md
 │   ├── ARCHITECTURE.md
 │   ├── DEPLOYMENT.md
