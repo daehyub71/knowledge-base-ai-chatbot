@@ -1,0 +1,1163 @@
+# Knowledge Base AI Chatbot - 상세 작업 목록 (TODO List)
+
+**프로젝트 위치**: `/Users/sunchulkim/src/knowledge-base-ai-chatbot/`
+**작성일**: 2025-01-24
+
+---
+
+## 📋 Week 1: 프로젝트 초기 설정 및 데이터 수집
+
+### 프로젝트 구조 생성
+- [x] 프로젝트 루트 디렉토리 생성 (`knowledge-base-ai-chatbot/`)
+- [x] `backend/` 디렉토리 구조 생성
+  - [x] `app/`, `batch/`, `tests/`, `scripts/` 디렉토리
+  - [x] `app/` 하위: `models/`, `schemas/`, `api/`, `core/`, `utils/`
+  - [x] `core/` 하위: `agents/`, `workflow/`, `services/`
+- [ ] `frontend/` 디렉토리 구조 생성 (나중에 진행)
+- [x] Git 저장소 초기화 (`git init`)
+- [x] `.gitignore` 파일 작성
+
+### Python 환경 설정
+- [x] `backend/` 디렉토리에 가상환경 생성 (`python3 -m venv venv`)
+- [x] 가상환경 활성화
+- [x] `requirements.txt` 작성
+  - [x] fastapi, uvicorn
+  - [x] sqlalchemy, psycopg2-binary
+  - [x] langchain, langgraph, langchain-openai
+  - [x] faiss-cpu
+  - [x] google-cloud-storage
+  - [x] atlassian-python-api
+  - [x] python-dotenv
+  - [x] pydantic, pydantic-settings
+- [x] 의존성 패키지 설치 (`pip install -r requirements.txt`)
+
+### 환경 변수 설정
+- [x] `backend/.env.example` 파일 작성 (12장 참고)
+- [x] `backend/.env` 파일 생성 (실제 값 입력)
+  - [x] DATABASE_URL (로컬 PostgreSQL)
+  - [x] AZURE_OPENAI_API_KEY, ENDPOINT, DEPLOYMENT
+  - [x] OPENAI_API_KEY (또는 ANTHROPIC_API_KEY)
+  - [x] JIRA_URL, USERNAME, API_TOKEN, PROJECT_KEY (로컬 서버용)
+  - [x] CONFLUENCE_URL, USERNAME, PASSWORD, API_TOKEN, SPACE_KEY (로컬 서버용)
+  - [x] MCP_BASE_URL, MCP_JIRA_URL, MCP_CONFLUENCE_URL
+  - [ ] GCS_BUCKET_NAME (나중에 설정)
+
+### PostgreSQL 설정
+- [x] 로컬 PostgreSQL 설치 확인 (`brew services list`)
+- [x] 데이터베이스 생성 (`createdb knowledge_base`)
+- [x] `backend/app/database.py` 작성
+  - [x] SQLAlchemy 엔진 생성
+  - [x] SessionLocal 설정
+  - [x] Base 선언
+- [x] `backend/app/config.py` 작성
+  - [x] pydantic-settings로 환경변수 로드
+  - [x] Settings 클래스 정의
+  - [x] 로컬 Jira/Confluence 서버 지원 추가 (username, password, project_key, space_key)
+
+### 데이터베이스 모델 생성 (SQLAlchemy)
+- [x] `backend/app/models/document.py` 작성
+  - [x] `Document` 모델 (id, doc_id, doc_type, title, url, content, author, created_at, updated_at, last_synced_at, deleted, metadata)
+  - [x] `DocumentChunk` 모델 (id, document_id, chunk_index, chunk_text, faiss_index_id, created_at)
+- [x] `backend/app/models/chat.py` 작성
+  - [x] `ChatHistory` 모델 (id, session_id, user_query, response, response_type, source_documents, relevance_score, created_at)
+- [x] `backend/app/models/feedback.py` 작성
+  - [x] `Feedback` 모델 (id, chat_history_id, rating, comment, created_at)
+- [x] `backend/app/models/sync.py` 작성
+  - [x] `SyncHistory` 모델 (id, sync_type, status, documents_added, documents_updated, documents_deleted, error_message, started_at, completed_at)
+
+### 데이터베이스 초기화 스크립트
+- [x] `backend/scripts/init_db.py` 작성
+  - [x] `Base.metadata.create_all()` 실행
+  - [x] 테이블 생성 확인 쿼리
+- [x] 스크립트 실행하여 테이블 생성 확인
+
+### Jira API 클라이언트 구현
+- [x] `backend/app/core/services/jira_client.py` 작성
+  - [x] `JiraClient` 클래스 생성
+  - [x] `__init__`: atlassian-python-api의 Jira 초기화
+  - [x] 로컬 서버/Cloud 자동 감지 (cloud 파라미터)
+  - [x] username/email 모두 지원
+  - [x] default_project_key 지원
+  - [x] `get_all_projects()`: 모든 프로젝트 조회
+  - [x] `get_issues_updated_since(last_sync)`: JQL로 증분 조회
+  - [x] `get_issue_details(issue_key)`: 이슈 상세 정보 (description, comments)
+  - [x] `get_comments(issue_key)`: 주석 가져오기
+- [x] Jira 연결 테스트 스크립트 작성 (`scripts/test_jira.py`)
+- [ ] 실제 Jira에서 샘플 이슈 5개 가져오기 테스트
+
+### Confluence API 클라이언트 구현
+- [x] `backend/app/core/services/confluence_client.py` 작성
+  - [x] `ConfluenceClient` 클래스 생성
+  - [x] `__init__`: atlassian-python-api의 Confluence 초기화
+  - [x] 로컬 서버/Cloud 자동 감지 (cloud 파라미터)
+  - [x] username/email, password/api_token 모두 지원
+  - [x] default_space_key 지원
+  - [x] `get_all_spaces()`: 모든 Space 조회
+  - [x] `get_pages_updated_since(last_sync)`: CQL로 증분 조회
+  - [x] `get_page_content(page_id)`: 페이지 본문 가져오기
+  - [x] `get_page_comments(page_id)`: 주석 가져오기
+- [x] Confluence 연결 테스트 스크립트 작성 (`scripts/test_confluence.py`)
+- [ ] 실제 Confluence에서 샘플 페이지 5개 가져오기 테스트
+
+### 데이터 수집 로직 구현
+- [x] `backend/app/core/services/data_collector.py` 작성
+  - [x] `collect_jira_documents()` 함수
+    - [x] Jira 이슈 조회
+    - [x] PostgreSQL에 저장 (Document 테이블)
+    - [x] 중복 체크 (doc_id 기준)
+  - [x] `collect_confluence_documents()` 함수
+    - [x] Confluence 페이지 조회
+    - [x] PostgreSQL에 저장
+    - [x] 중복 체크
+- [x] `backend/scripts/collect_data.py` 작성
+  - [x] argparse로 `--source jira/confluence` 옵션
+  - [x] 전체 수집 실행
+  - [x] 수집 결과 통계 출력
+- [ ] 스크립트 실행하여 실제 데이터 수집
+  - [ ] `python scripts/collect_data.py --source jira`
+  - [ ] `python scripts/collect_data.py --source confluence`
+  - [ ] PostgreSQL에서 데이터 확인 (`SELECT COUNT(*) FROM documents;`)
+
+### 증분 업데이트 로직 구현
+- [x] `backend/app/core/services/incremental_sync.py` 작성
+  - [x] `get_last_sync_time(source)` 함수
+    - [x] sync_history 테이블에서 마지막 성공 시간 조회
+  - [x] `fetch_incremental_jira(last_sync)` 함수
+    - [x] `updated >= last_sync` JQL 쿼리
+    - [x] 변경된 이슈만 가져오기
+  - [x] `fetch_incremental_confluence(last_sync)` 함수
+    - [x] `lastModified >= last_sync` CQL 쿼리
+    - [x] 변경된 페이지만 가져오기
+- [ ] 증분 업데이트 테스트
+  - [ ] 기존 문서 수정 후 재수집 확인
+
+### 삭제된 문서 감지 로직 구현
+- [x] `backend/app/core/services/deletion_detector.py` 작성
+  - [x] `detect_deleted_documents(source, current_doc_ids)` 함수
+    - [x] PostgreSQL의 doc_id 집합 조회
+    - [x] Jira/Confluence의 현재 doc_id 집합과 비교
+    - [x] 차집합 → deleted=True 업데이트
+- [ ] 삭제 감지 테스트
+  - [ ] 테스트 이슈/페이지 삭제 후 감지 확인
+
+### Week 1 마무리
+- [ ] 코드 리뷰 및 리팩토링
+- [ ] 유닛 테스트 작성 (JiraClient, ConfluenceClient)
+- [ ] README.md 초안 작성 (프로젝트 소개, 설치 방법)
+- [ ] Git 커밋 (`Week 1 완료: 데이터 수집 시스템`)
+
+---
+
+## 📋 Week 2: RAG 시스템 구축
+
+### 텍스트 청킹 구현
+- [ ] `backend/app/utils/text_splitter.py` 작성
+  - [ ] `chunk_documents(documents)` 함수
+    - [ ] RecursiveCharacterTextSplitter 사용
+    - [ ] chunk_size=1000, chunk_overlap=200
+    - [ ] 청크 목록 반환 (텍스트 + 메타데이터)
+- [ ] 청킹 테스트
+  - [ ] 샘플 문서로 청킹 실행
+  - [ ] 청크 개수, 크기 확인
+
+### OpenAI 임베딩 서비스 구현
+- [ ] `backend/app/core/services/embedding_service.py` 작성
+  - [ ] `EmbeddingService` 클래스 생성
+  - [ ] `__init__`: OpenAI 클라이언트 초기화
+  - [ ] `get_embedding(text)` 함수
+    - [ ] text-embedding-3-large 호출
+    - [ ] 벡터 반환 (3072차원)
+  - [ ] `get_embeddings_batch(texts)` 함수
+    - [ ] 배치 처리 (100개씩)
+    - [ ] 벡터 리스트 반환
+- [ ] 임베딩 테스트
+  - [ ] 샘플 텍스트 5개로 임베딩 생성
+  - [ ] 벡터 차원 확인
+
+### FAISS 인덱스 빌드 로직 구현
+- [ ] `backend/app/core/services/vector_db_service.py` 작성
+  - [ ] `VectorDBService` 클래스 생성
+  - [ ] `create_index(dimension)` 함수
+    - [ ] FAISS IndexFlatL2 생성
+  - [ ] `add_vectors(vectors, metadata)` 함수
+    - [ ] 인덱스에 벡터 추가
+    - [ ] metadata.pkl에 메타데이터 저장
+  - [ ] `search(query_vector, k=5)` 함수
+    - [ ] 유사도 검색
+    - [ ] (index_id, score) 리스트 반환
+  - [ ] `save_index(filepath)` 함수
+    - [ ] FAISS 인덱스 저장
+  - [ ] `load_index(filepath)` 함수
+    - [ ] FAISS 인덱스 로드
+- [ ] FAISS 인덱스 테스트
+  - [ ] 샘플 벡터 10개로 인덱스 생성
+  - [ ] 검색 테스트
+
+### Cloud Storage 통합
+- [ ] GCP 프로젝트 생성 (콘솔에서)
+- [ ] Cloud Storage 버킷 생성
+  - [ ] 버킷 이름: `knowledge-base-{PROJECT_ID}`
+  - [ ] 리전: `asia-northeast3` (서울)
+- [ ] 서비스 계정 생성 및 키 다운로드
+  - [ ] IAM > 서비스 계정 > 키 생성 (JSON)
+  - [ ] `backend/service-account.json` 저장 (gitignore 추가)
+- [ ] `backend/app/utils/storage.py` 작성
+  - [ ] `StorageClient` 클래스 생성
+  - [ ] `__init__`: google-cloud-storage 클라이언트 초기화
+  - [ ] `upload_file(local_path, gcs_path)` 함수
+  - [ ] `download_file(gcs_path, local_path)` 함수
+  - [ ] `file_exists(gcs_path)` 함수
+- [ ] Cloud Storage 테스트
+  - [ ] 샘플 파일 업로드
+  - [ ] 다운로드 후 내용 확인
+
+### 벡터 DB 빌드 스크립트 작성
+- [ ] `backend/scripts/build_vector_db.py` 작성
+  - [ ] PostgreSQL에서 모든 문서 조회
+  - [ ] 텍스트 청킹 (DocumentChunk 테이블에 저장)
+  - [ ] 각 청크에 대해 임베딩 생성
+  - [ ] FAISS 인덱스에 추가
+  - [ ] faiss_index_id 매핑 저장 (DocumentChunk 테이블)
+  - [ ] FAISS 인덱스 저장 (로컬)
+  - [ ] Cloud Storage에 업로드
+  - [ ] 진행 상황 로깅
+- [ ] 스크립트 실행
+  - [ ] `python scripts/build_vector_db.py`
+  - [ ] 실행 시간 측정 (예상: 10-30분)
+  - [ ] FAISS 인덱스 파일 생성 확인
+
+### 벡터 검색 함수 구현
+- [ ] `backend/app/core/services/rag_service.py` 작성
+  - [ ] `RAGService` 클래스 생성
+  - [ ] `__init__`: VectorDBService, EmbeddingService 초기화
+  - [ ] `search_documents(query, top_k=5)` 함수
+    - [ ] 쿼리 임베딩 생성
+    - [ ] FAISS 검색
+    - [ ] PostgreSQL에서 메타데이터 조회
+    - [ ] 결과 반환 (doc_id, title, content, score, url, author, updated_at)
+
+### 메타데이터 필터링 구현
+- [ ] `RAGService.search_documents()`에 필터링 추가
+  - [ ] `deleted=False` 문서만 반환
+  - [ ] 옵션: doc_type 필터 (jira/confluence)
+  - [ ] 옵션: 날짜 범위 필터
+
+### 검색 품질 테스트
+- [ ] `backend/scripts/test_search.py` 작성
+  - [ ] 10개 샘플 쿼리 준비
+  - [ ] 각 쿼리에 대해 검색 실행
+  - [ ] Top-5 결과 출력
+  - [ ] 유사도 점수 확인
+- [ ] 검색 품질 평가
+  - [ ] 관련 문서가 상위 결과에 나오는지 확인
+  - [ ] 임계값 0.7이 적절한지 판단
+
+### Week 2 마무리
+- [ ] 코드 리뷰 및 리팩토링
+- [ ] 유닛 테스트 작성 (EmbeddingService, VectorDBService, RAGService)
+- [ ] FAISS 인덱스 백업 (Cloud Storage)
+- [ ] Git 커밋 (`Week 2 완료: RAG 시스템 구축`)
+
+---
+
+## 📋 Week 3: LangGraph 워크플로우 구현
+
+### LangGraph State 정의
+- [ ] `backend/app/core/workflow/state.py` 작성
+  - [ ] `ChatState` TypedDict 정의
+    - [ ] user_query: str
+    - [ ] analyzed_query: dict
+    - [ ] search_results: List[dict]
+    - [ ] relevance_decision: Literal["relevant", "irrelevant"]
+    - [ ] response: str
+    - [ ] response_type: Literal["rag", "llm_fallback"]
+    - [ ] sources: List[dict]
+
+### OpenAI LLM 서비스 구현
+- [ ] `backend/app/core/services/llm_service.py` 작성
+  - [ ] `LLMService` 클래스 생성
+  - [ ] `__init__`: OpenAI 클라이언트 초기화 (gpt-4o-mini, gpt-4o 선택 가능)
+  - [ ] `generate(prompt, system_message=None)` 함수
+    - [ ] ChatCompletion API 호출
+    - [ ] 응답 텍스트 반환
+  - [ ] `generate_json(prompt)` 함수
+    - [ ] JSON 형식 응답 강제
+    - [ ] 파싱하여 dict 반환
+
+### Agent 1: QueryAnalyzer
+- [ ] `backend/app/core/agents/query_analyzer.py` 작성
+  - [ ] `query_analyzer(state: ChatState) -> ChatState` 함수
+  - [ ] 프롬프트 작성
+    - [ ] 사용자 문의 분석 요청
+    - [ ] intent, keywords, entities 추출
+    - [ ] JSON 형식으로 반환
+  - [ ] LLMService.generate_json() 호출
+  - [ ] state["analyzed_query"] 업데이트
+- [ ] 단위 테스트 작성
+  - [ ] 샘플 쿼리 5개로 테스트
+  - [ ] 출력 형식 검증
+
+### Agent 2: RAGSearcher
+- [ ] `backend/app/core/agents/rag_searcher.py` 작성
+  - [ ] `rag_searcher(state: ChatState) -> ChatState` 함수
+  - [ ] RAGService.search_documents() 호출
+  - [ ] Top-K 결과 가져오기 (K=5)
+  - [ ] state["search_results"] 업데이트
+- [ ] 단위 테스트 작성
+  - [ ] 샘플 쿼리로 검색 실행
+  - [ ] 결과 개수 확인
+
+### Agent 3: RelevanceChecker
+- [ ] `backend/app/core/agents/relevance_checker.py` 작성
+  - [ ] `relevance_checker(state: ChatState) -> ChatState` 함수
+  - [ ] 단계 1: 유사도 점수 임계값 체크 (0.7)
+    - [ ] 최고 점수가 0.7 미만이면 "irrelevant"
+  - [ ] 단계 2: LLM으로 관련성 재확인
+    - [ ] 프롬프트: "이 문서가 질문에 답변할 수 있나요?"
+    - [ ] yes/no 응답
+  - [ ] state["relevance_decision"] 업데이트
+- [ ] 단위 테스트 작성
+  - [ ] 관련 있는 케이스, 없는 케이스 각각 테스트
+
+### Agent 4a: RAGResponder
+- [ ] `backend/app/core/agents/rag_responder.py` 작성
+  - [ ] `rag_responder(state: ChatState) -> ChatState` 함수
+  - [ ] 프롬프트 작성
+    - [ ] 검색된 문서 컨텍스트 포함 (Top-3)
+    - [ ] 사용자 질문에 답변 요청
+  - [ ] LLMService.generate() 호출
+  - [ ] state["response"] 업데이트
+  - [ ] state["response_type"] = "rag"
+  - [ ] state["sources"] = 검색 결과
+- [ ] 단위 테스트 작성
+  - [ ] 샘플 검색 결과로 답변 생성
+
+### Agent 4b: LLMFallback
+- [ ] `backend/app/core/agents/llm_fallback.py` 작성
+  - [ ] `llm_fallback(state: ChatState) -> ChatState` 함수
+  - [ ] 프롬프트 작성
+    - [ ] "회사 문서에 없는 내용입니다"
+    - [ ] 일반 지식으로 답변
+    - [ ] 답변 끝에 면책 문구 추가
+  - [ ] LLMService.generate() 호출
+  - [ ] state["response"] 업데이트
+  - [ ] state["response_type"] = "llm_fallback"
+  - [ ] state["sources"] = []
+- [ ] 단위 테스트 작성
+  - [ ] 관련 문서 없는 쿼리로 답변 생성
+
+### Agent 5: ResponseFormatter
+- [ ] `backend/app/core/agents/response_formatter.py` 작성
+  - [ ] `response_formatter(state: ChatState) -> ChatState` 함수
+  - [ ] Markdown 형식으로 포맷팅
+    - [ ] 답변 본문
+    - [ ] "### 📚 참고 문서" 섹션
+    - [ ] 각 문서: [제목](URL), 작성자, 업데이트 시간
+  - [ ] state["response"] 업데이트
+- [ ] 단위 테스트 작성
+  - [ ] 출력 형식 검증
+
+### LangGraph 워크플로우 그래프 구성
+- [ ] `backend/app/core/workflow/graph.py` 작성
+  - [ ] StateGraph(ChatState) 생성
+  - [ ] 6개 노드 추가 (query_analyzer, rag_searcher, relevance_checker, rag_responder, llm_fallback, response_formatter)
+  - [ ] 엣지 연결
+    - [ ] entry_point → query_analyzer
+    - [ ] query_analyzer → rag_searcher
+    - [ ] rag_searcher → relevance_checker
+    - [ ] relevance_checker → (조건부) rag_responder or llm_fallback
+    - [ ] rag_responder → response_formatter
+    - [ ] llm_fallback → response_formatter
+    - [ ] response_formatter → END
+  - [ ] 워크플로우 컴파일 (`app = workflow.compile()`)
+  - [ ] `run_workflow(user_query)` 함수 작성
+
+### End-to-End 테스트
+- [ ] `backend/scripts/test_workflow.py` 작성
+  - [ ] 10개 샘플 쿼리 준비
+    - [ ] 5개: RAG에서 답변 가능한 질문
+    - [ ] 5개: 일반 지식 질문
+  - [ ] 각 쿼리에 대해 워크플로우 실행
+  - [ ] 응답 타입 (rag/llm_fallback) 확인
+  - [ ] 답변 품질 수동 검증
+- [ ] 스크립트 실행 및 결과 분석
+
+### 워크플로우 시각화
+- [ ] LangGraph 그래프 시각화 코드 작성
+  - [ ] `app.get_graph().draw_png()` 또는 Mermaid
+  - [ ] 이미지 파일 저장 (`docs/workflow_diagram.png`)
+
+### Week 3 마무리
+- [ ] 코드 리뷰 및 리팩토링
+- [ ] 유닛 테스트 작성 (각 에이전트)
+- [ ] 통합 테스트 작성 (전체 워크플로우)
+- [ ] Git 커밋 (`Week 3 완료: LangGraph 워크플로우`)
+
+---
+
+## 📋 Week 4: API 엔드포인트 구현
+
+### FastAPI 앱 초기화
+- [ ] `backend/app/main.py` 작성
+  - [ ] FastAPI() 인스턴스 생성
+  - [ ] CORS 설정 (CORSMiddleware)
+  - [ ] 라우터 등록 준비
+  - [ ] 시작/종료 이벤트 핸들러
+    - [ ] startup: FAISS 인덱스 로드
+    - [ ] shutdown: DB 연결 종료
+
+### Pydantic 스키마 정의
+- [ ] `backend/app/schemas/chat.py` 작성
+  - [ ] `ChatRequest` (query, session_id)
+  - [ ] `Source` (title, url, author, updated_at)
+  - [ ] `ChatResponse` (response, response_type, sources, relevance_score, chat_id)
+- [ ] `backend/app/schemas/feedback.py` 작성
+  - [ ] `FeedbackRequest` (chat_id, rating, comment)
+  - [ ] `FeedbackResponse` (success, message)
+- [ ] `backend/app/schemas/stats.py` 작성
+  - [ ] `StatsResponse` (total_documents, total_chunks, jira_issues, confluence_pages, last_sync, chat_count_today, rag_response_rate, avg_feedback_rating)
+
+### API 엔드포인트 1: POST /api/chat
+- [ ] `backend/app/api/chat.py` 작성
+  - [ ] `@app.post("/api/chat")` 엔드포인트
+  - [ ] ChatRequest 받기
+  - [ ] 워크플로우 실행 (`run_workflow(query)`)
+  - [ ] ChatHistory 테이블에 저장
+    - [ ] session_id, user_query, response, response_type, source_documents, relevance_score
+  - [ ] ChatResponse 반환
+- [ ] 단위 테스트 작성
+  - [ ] pytest로 API 호출 테스트
+  - [ ] 응답 형식 검증
+
+### API 엔드포인트 2: POST /api/feedback
+- [ ] `backend/app/api/feedback.py` 작성
+  - [ ] `@app.post("/api/feedback")` 엔드포인트
+  - [ ] FeedbackRequest 받기
+  - [ ] Feedback 테이블에 저장
+    - [ ] chat_history_id, rating, comment
+  - [ ] FeedbackResponse 반환
+- [ ] 단위 테스트 작성
+
+### API 엔드포인트 3: GET /api/health
+- [ ] `backend/app/api/health.py` 작성
+  - [ ] `@app.get("/api/health")` 엔드포인트
+  - [ ] 데이터베이스 연결 확인 (simple query)
+  - [ ] FAISS 인덱스 로드 상태 확인
+  - [ ] sync_history에서 마지막 동기화 시간 조회
+  - [ ] HealthResponse 반환
+- [ ] 단위 테스트 작성
+
+### API 엔드포인트 4: GET /api/stats
+- [ ] `backend/app/api/stats.py` 작성
+  - [ ] `@app.get("/api/stats")` 엔드포인트
+  - [ ] PostgreSQL에서 통계 집계
+    - [ ] `SELECT COUNT(*) FROM documents`
+    - [ ] `SELECT COUNT(*) FROM document_chunks`
+    - [ ] Jira 문서 수, Confluence 문서 수
+    - [ ] 오늘 채팅 수 (`created_at >= today`)
+    - [ ] RAG 응답 비율 (`response_type='rag'`)
+    - [ ] 평균 피드백 (`AVG(rating)`)
+  - [ ] StatsResponse 반환
+- [ ] 단위 테스트 작성
+
+### 라우터 등록
+- [ ] `backend/app/main.py`에 라우터 등록
+  - [ ] `app.include_router(chat_router, prefix="/api")`
+  - [ ] `app.include_router(feedback_router, prefix="/api")`
+  - [ ] `app.include_router(health_router, prefix="/api")`
+  - [ ] `app.include_router(stats_router, prefix="/api")`
+
+### 에러 핸들링
+- [ ] `backend/app/utils/exceptions.py` 작성
+  - [ ] 커스텀 예외 클래스 (DocumentNotFoundError, etc.)
+- [ ] `backend/app/main.py`에 예외 핸들러 등록
+  - [ ] `@app.exception_handler(Exception)`
+  - [ ] JSON 형식 에러 응답
+
+### 로깅 설정
+- [ ] `backend/app/utils/logger.py` 작성
+  - [ ] Python logging 설정
+  - [ ] 파일 핸들러 (logs/app.log)
+  - [ ] 콘솔 핸들러
+  - [ ] 로그 레벨 (INFO)
+- [ ] 각 엔드포인트에 로깅 추가
+  - [ ] 요청 로깅
+  - [ ] 에러 로깅
+
+### Swagger 문서 작성
+- [ ] 각 엔드포인트에 docstring 추가
+  - [ ] 설명, 파라미터, 응답 예시
+- [ ] FastAPI 자동 생성 문서 확인
+  - [ ] `http://localhost:8000/docs`
+
+### 로컬 서버 실행 테스트
+- [ ] `uvicorn app.main:app --reload --port 8000` 실행
+- [ ] Swagger UI에서 각 엔드포인트 테스트
+  - [ ] POST /api/chat (샘플 쿼리)
+  - [ ] POST /api/feedback
+  - [ ] GET /api/health
+  - [ ] GET /api/stats
+
+### Week 4 마무리
+- [ ] 코드 리뷰 및 리팩토링
+- [ ] API 통합 테스트 작성 (pytest)
+- [ ] Postman 컬렉션 생성 (optional)
+- [ ] Git 커밋 (`Week 4 완료: API 엔드포인트`)
+
+---
+
+## 📋 Week 5: 배치 프로세스 구현
+
+### 배치 프로젝트 구조 생성
+- [ ] `backend/batch/` 디렉토리 확인
+- [ ] `backend/batch/__init__.py` 생성
+
+### 배치 메인 로직
+- [ ] `backend/batch/main.py` 작성
+  - [ ] argparse로 `--source jira/confluence/all` 옵션
+  - [ ] `run_batch()` 메인 함수
+  - [ ] SyncHistory 테이블에 시작 기록 (status='running')
+  - [ ] 예외 처리 및 에러 로깅
+  - [ ] 완료 시 SyncHistory 업데이트 (status='success')
+
+### Jira 증분 동기화
+- [ ] `backend/batch/sync_jira.py` 작성
+  - [ ] `sync_jira_incremental()` 함수
+  - [ ] sync_history에서 마지막 성공 시간 조회
+  - [ ] JiraClient로 증분 업데이트 조회 (`updated > last_sync`)
+  - [ ] PostgreSQL에 업데이트
+    - [ ] 신규 문서: INSERT
+    - [ ] 기존 문서: UPDATE (title, content, updated_at, last_synced_at)
+  - [ ] 통계 반환 (added, updated)
+
+### Confluence 증분 동기화
+- [ ] `backend/batch/sync_confluence.py` 작성
+  - [ ] `sync_confluence_incremental()` 함수
+  - [ ] sync_history에서 마지막 성공 시간 조회
+  - [ ] ConfluenceClient로 증분 업데이트 조회
+  - [ ] PostgreSQL에 업데이트
+  - [ ] 통계 반환
+
+### 삭제된 문서 감지 및 처리
+- [ ] `backend/batch/detect_deleted.py` 작성
+  - [ ] `detect_and_mark_deleted(source)` 함수
+  - [ ] Jira/Confluence에서 현재 모든 문서 ID 조회
+  - [ ] PostgreSQL의 문서 ID와 비교
+  - [ ] 차집합 → `UPDATE documents SET deleted=True`
+  - [ ] 통계 반환 (deleted_count)
+
+### 텍스트 청킹 및 임베딩
+- [ ] `backend/batch/process_chunks.py` 작성
+  - [ ] `process_document_chunks(document_ids)` 함수
+  - [ ] 각 문서에 대해:
+    - [ ] 텍스트 청킹 (RecursiveCharacterTextSplitter)
+    - [ ] 기존 청크 삭제 (document_chunks 테이블)
+    - [ ] 새 청크 INSERT
+    - [ ] 임베딩 생성 (배치 100개씩)
+    - [ ] 벡터 리스트 반환
+
+### FAISS 인덱스 업데이트
+- [ ] `backend/batch/update_faiss.py` 작성
+  - [ ] `update_faiss_index()` 함수
+  - [ ] Cloud Storage에서 기존 FAISS 인덱스 다운로드
+    - [ ] 없으면 새로 생성
+  - [ ] 삭제된 문서의 벡터 제거
+    - [ ] deleted=True인 문서의 faiss_index_id 조회
+    - [ ] FAISS에서 제거 (IndexIDMap 사용 권장)
+  - [ ] 새 벡터 추가
+    - [ ] `index.add(vectors)`
+    - [ ] faiss_index_id를 document_chunks에 업데이트
+  - [ ] 로컬에 저장
+  - [ ] Cloud Storage에 업로드
+
+### 배치 로그 저장
+- [ ] `backend/batch/main.py`에 로그 저장 로직 추가
+  - [ ] 배치 시작/종료 시간
+  - [ ] 처리된 문서 수 (added, updated, deleted)
+  - [ ] 에러 메시지
+  - [ ] 로그 파일 생성 (`YYYY-MM-DD.log`)
+  - [ ] Cloud Storage에 업로드 (`batch_logs/`)
+
+### 재시도 로직 구현
+- [ ] `backend/batch/retry_handler.py` 작성
+  - [ ] `retry_with_backoff(func, max_retries=3)` 데코레이터
+  - [ ] 실패 시 1시간 대기 후 재시도
+  - [ ] 최대 3회 재시도
+- [ ] sync_jira, sync_confluence에 데코레이터 적용
+
+### 배치 로컬 테스트
+- [ ] 로컬에서 배치 실행
+  - [ ] `python -m batch.main --source all`
+- [ ] 증분 업데이트 확인
+  - [ ] Jira/Confluence에서 문서 수정 후 재실행
+  - [ ] PostgreSQL에서 updated_at 확인
+- [ ] 삭제 감지 확인
+  - [ ] 테스트 문서 삭제 후 재실행
+  - [ ] deleted=True 확인
+- [ ] FAISS 인덱스 업데이트 확인
+  - [ ] Cloud Storage에 업로드 확인
+
+### Week 5 마무리
+- [ ] 코드 리뷰 및 리팩토링
+- [ ] 배치 통합 테스트 작성
+- [ ] 배치 실행 로그 분석
+- [ ] Git 커밋 (`Week 5 완료: 배치 프로세스`)
+
+---
+
+## 📋 Week 6: 프론트엔드 개발 (React)
+
+### React 프로젝트 생성
+- [ ] `frontend/` 디렉토리로 이동
+- [ ] Vite로 React 프로젝트 생성
+  - [ ] `npm create vite@latest . -- --template react-ts`
+- [ ] 의존성 설치
+  - [ ] `npm install`
+  - [ ] `npm install axios react-query zustand`
+  - [ ] `npm install -D tailwindcss postcss autoprefixer`
+  - [ ] `npm install react-router-dom react-markdown`
+
+### Tailwind CSS 설정
+- [ ] `npx tailwindcss init -p`
+- [ ] `tailwind.config.js` 설정
+  - [ ] content 경로 추가 (`./src/**/*.{js,ts,jsx,tsx}`)
+- [ ] `src/index.css`에 Tailwind directives 추가
+- [ ] Tailwind 동작 확인
+
+### shadcn/ui 설치 (Optional)
+- [ ] `npx shadcn-ui@latest init`
+- [ ] 필요한 컴포넌트 설치
+  - [ ] `npx shadcn-ui@latest add button`
+  - [ ] `npx shadcn-ui@latest add input`
+  - [ ] `npx shadcn-ui@latest add card`
+
+### 프로젝트 구조 생성
+- [ ] `src/` 하위 디렉토리 생성
+  - [ ] `components/`, `hooks/`, `services/`, `stores/`, `pages/`, `types/`
+
+### TypeScript 타입 정의
+- [ ] `src/types/chat.ts` 작성
+  - [ ] `Message` 인터페이스 (id, role, content, sources, timestamp)
+  - [ ] `Source` 인터페이스 (title, url, author, updated_at)
+  - [ ] `ChatResponse` 인터페이스
+
+### Axios API 클라이언트
+- [ ] `src/services/api.ts` 작성
+  - [ ] axios 인스턴스 생성
+  - [ ] baseURL: `import.meta.env.VITE_API_BASE_URL`
+  - [ ] `sendMessage(query, sessionId)` 함수
+  - [ ] `submitFeedback(chatId, rating, comment)` 함수
+  - [ ] `fetchStats()` 함수
+
+### Zustand 상태 관리
+- [ ] `src/stores/chatStore.ts` 작성
+  - [ ] `useChatStore` 생성
+  - [ ] State: messages, sessionId, isLoading
+  - [ ] Actions: addMessage, setLoading, clearMessages
+
+### React Query 설정
+- [ ] `src/main.tsx`에 QueryClientProvider 추가
+- [ ] `src/hooks/useChat.ts` 작성
+  - [ ] `useMutation`으로 sendMessage 호출
+  - [ ] 성공 시 messages에 추가
+- [ ] `src/hooks/useFeedback.ts` 작성
+  - [ ] `useMutation`으로 submitFeedback 호출
+
+### 컴포넌트 1: MessageItem
+- [ ] `src/components/MessageItem.tsx` 작성
+  - [ ] Props: message (Message 타입)
+  - [ ] 사용자 메시지 vs 봇 메시지 스타일 구분
+  - [ ] 봇 메시지: react-markdown으로 렌더링
+  - [ ] Tailwind로 스타일링
+
+### 컴포넌트 2: SourceCard
+- [ ] `src/components/SourceCard.tsx` 작성
+  - [ ] Props: source (Source 타입)
+  - [ ] Jira/Confluence 링크, 작성자, 업데이트 시간 표시
+  - [ ] 카드 스타일 (Tailwind)
+
+### 컴포넌트 3: FeedbackButtons
+- [ ] `src/components/FeedbackButtons.tsx` 작성
+  - [ ] Props: chatId
+  - [ ] 👍/👎 버튼
+  - [ ] 클릭 시 useFeedback.mutate() 호출
+  - [ ] 피드백 제출 후 버튼 비활성화
+
+### 컴포넌트 4: MessageList
+- [ ] `src/components/MessageList.tsx` 작성
+  - [ ] Props: messages
+  - [ ] messages.map()으로 MessageItem 렌더링
+  - [ ] 각 봇 메시지에 SourceCard, FeedbackButtons 포함
+  - [ ] 스크롤 자동 하단 이동
+
+### 컴포넌트 5: ChatInterface
+- [ ] `src/components/ChatInterface.tsx` 작성
+  - [ ] State: inputValue
+  - [ ] MessageList 컴포넌트
+  - [ ] 입력 폼 (input + 전송 버튼)
+  - [ ] useChat 훅 사용
+  - [ ] 전송 버튼 클릭 시 sendMessage
+  - [ ] 로딩 중 버튼 비활성화
+  - [ ] 반응형 레이아웃 (mobile-friendly)
+
+### 페이지 1: HomePage
+- [ ] `src/pages/HomePage.tsx` 작성
+  - [ ] ChatInterface 컴포넌트 렌더링
+  - [ ] 헤더 (제목, 로고)
+  - [ ] 레이아웃 설정
+
+### 환경 변수 설정
+- [ ] `frontend/.env` 파일 생성
+  - [ ] `VITE_API_BASE_URL=http://localhost:8000`
+
+### 로컬 개발 서버 실행
+- [ ] `npm run dev`
+- [ ] `http://localhost:5173` 접속
+- [ ] 채팅 인터페이스 동작 확인
+  - [ ] 메시지 전송
+  - [ ] 응답 받기
+  - [ ] 출처 표시
+  - [ ] 피드백 버튼
+
+### Week 6 마무리
+- [ ] 코드 리뷰 및 리팩토링
+- [ ] 컴포넌트 테스트 작성 (Vitest, optional)
+- [ ] 반응형 디자인 확인 (모바일, 태블릿)
+- [ ] Git 커밋 (`Week 6 완료: React 프론트엔드`)
+
+---
+
+## 📋 Week 7: 통계 대시보드 (관리자용)
+
+### Stats API 훅
+- [ ] `src/hooks/useStats.ts` 작성
+  - [ ] `useQuery`로 fetchStats 호출
+  - [ ] 5초마다 자동 갱신 (refetchInterval)
+
+### 컴포넌트: StatsBoard
+- [ ] `src/components/StatsBoard.tsx` 작성
+  - [ ] useStats 훅 사용
+  - [ ] 카드 레이아웃으로 통계 표시
+    - [ ] 총 문서 수
+    - [ ] 총 청크 수
+    - [ ] Jira 이슈 수
+    - [ ] Confluence 페이지 수
+    - [ ] 마지막 동기화 시간
+    - [ ] 오늘 채팅 수
+    - [ ] RAG 응답 비율
+    - [ ] 평균 피드백 점수
+
+### 차트 라이브러리 설치
+- [ ] Chart.js 또는 Recharts 선택
+- [ ] `npm install recharts` (또는 chart.js)
+- [ ] `src/components/ResponseTypeChart.tsx` 작성
+  - [ ] RAG vs LLM Fallback 비율 파이 차트
+- [ ] `src/components/FeedbackChart.tsx` 작성
+  - [ ] 긍정/부정 피드백 비율 바 차트
+
+### 페이지 2: AdminPage
+- [ ] `src/pages/AdminPage.tsx` 작성
+  - [ ] StatsBoard 컴포넌트
+  - [ ] ResponseTypeChart 컴포넌트
+  - [ ] FeedbackChart 컴포넌트
+  - [ ] 레이아웃 (Grid)
+
+### 라우팅 설정
+- [ ] `src/App.tsx` 작성
+  - [ ] React Router 설정
+  - [ ] `/` → HomePage
+  - [ ] `/admin/stats` → AdminPage
+- [ ] 네비게이션 메뉴 추가
+  - [ ] 헤더에 링크 (홈, 통계)
+
+### 통계 API 추가 엔드포인트 (Optional)
+- [ ] `GET /api/stats/daily` - 일별 채팅 수
+- [ ] `GET /api/stats/feedback` - 피드백 통계
+- [ ] 프론트엔드에서 호출하여 차트 데이터 구성
+
+### 관리자 페이지 접근 제어 (Optional)
+- [ ] 간단한 비밀번호 입력 페이지
+- [ ] localStorage에 저장
+- [ ] 접근 시 체크
+
+### 로컬 테스트
+- [ ] `/admin/stats` 페이지 접속
+- [ ] 통계 정보 표시 확인
+- [ ] 차트 렌더링 확인
+
+### Week 7 마무리
+- [ ] 코드 리뷰 및 리팩토링
+- [ ] 통계 대시보드 디자인 개선
+- [ ] Git 커밋 (`Week 7 완료: 통계 대시보드`)
+
+---
+
+## 📋 Week 8: GCP 배포
+
+### GCP 프로젝트 및 리소스 생성
+- [ ] GCP 콘솔에서 프로젝트 선택/생성
+- [ ] Billing 활성화 확인
+- [ ] 필요한 API 활성화
+  - [ ] Cloud Run API
+  - [ ] Cloud SQL Admin API
+  - [ ] Cloud Storage API
+  - [ ] Secret Manager API
+  - [ ] Cloud Scheduler API
+
+### Cloud SQL (PostgreSQL) 생성
+- [ ] Cloud SQL 인스턴스 생성
+  - [ ] PostgreSQL 15
+  - [ ] 리전: asia-northeast3 (서울)
+  - [ ] 머신 타입: db-f1-micro (개발용)
+  - [ ] 스토리지: 10GB
+- [ ] 데이터베이스 생성 (`knowledge_base`)
+- [ ] 사용자 생성 (비밀번호 설정)
+- [ ] Cloud SQL Proxy 설정 (로컬 테스트용)
+- [ ] 로컬에서 연결 테스트
+- [ ] `init_db.py` 실행하여 테이블 생성
+
+### Secret Manager에 시크릿 등록
+- [ ] `database-url` 시크릿 생성
+  - [ ] 값: `postgresql://user:password@/dbname?host=/cloudsql/...`
+- [ ] `azure-openai-api-key` 시크릿 생성
+- [ ] `azure-openai-endpoint` 시크릿 생성
+- [ ] `jira-api-token` 시크릿 생성
+- [ ] `confluence-api-token` 시크릿 생성
+
+### Dockerfile 작성 (Main API)
+- [ ] `backend/Dockerfile.api` 작성
+  - [ ] FROM python:3.11-slim
+  - [ ] WORKDIR /app
+  - [ ] COPY requirements.txt
+  - [ ] RUN pip install
+  - [ ] COPY app/
+  - [ ] CMD uvicorn app.main:app --host 0.0.0.0 --port 8000
+- [ ] 로컬에서 Docker 빌드 테스트
+  - [ ] `docker build -f Dockerfile.api -t kb-api .`
+  - [ ] `docker run -p 8000:8000 kb-api`
+
+### Dockerfile 작성 (Batch)
+- [ ] `backend/Dockerfile.batch` 작성
+  - [ ] FROM python:3.11-slim
+  - [ ] WORKDIR /app
+  - [ ] COPY requirements.txt
+  - [ ] RUN pip install
+  - [ ] COPY app/, batch/
+  - [ ] CMD python -m batch.main --source all
+- [ ] 로컬에서 Docker 빌드 테스트
+
+### Cloud Run 서비스 배포 (Main API)
+- [ ] Artifact Registry 레포지토리 생성
+- [ ] Docker 이미지 빌드 및 푸시
+  - [ ] `docker build -t gcr.io/PROJECT_ID/kb-api:latest -f Dockerfile.api .`
+  - [ ] `docker push gcr.io/PROJECT_ID/kb-api:latest`
+- [ ] Cloud Run 서비스 생성
+  - [ ] 이미지: gcr.io/PROJECT_ID/kb-api:latest
+  - [ ] 리전: asia-northeast3
+  - [ ] 메모리: 2GB, CPU: 2
+  - [ ] Min instances: 1, Max instances: 10
+  - [ ] 환경 변수: Secret Manager에서 주입
+  - [ ] Cloud SQL 연결 설정
+- [ ] 배포 확인
+  - [ ] Cloud Run URL 접속
+  - [ ] `/api/health` 엔드포인트 테스트
+
+### Cloud Run Job 생성 (Batch)
+- [ ] Docker 이미지 빌드 및 푸시
+  - [ ] `docker build -t gcr.io/PROJECT_ID/kb-batch:latest -f Dockerfile.batch .`
+  - [ ] `docker push gcr.io/PROJECT_ID/kb-batch:latest`
+- [ ] Cloud Run Job 생성
+  - [ ] 이미지: gcr.io/PROJECT_ID/kb-batch:latest
+  - [ ] 리전: asia-northeast3
+  - [ ] 환경 변수: Secret Manager에서 주입
+  - [ ] Cloud SQL 연결, Cloud Storage 접근 권한
+  - [ ] Task count: 1
+  - [ ] Max retries: 3
+- [ ] 수동 실행 테스트
+  - [ ] gcloud CLI로 Job 실행
+  - [ ] 로그 확인 (Cloud Logging)
+
+### Cloud Scheduler 설정
+- [ ] Cloud Scheduler Job 생성
+  - [ ] 이름: `knowledge-base-daily-sync`
+  - [ ] 리전: asia-northeast3
+  - [ ] 스케줄: `0 6 * * *` (매일 오전 6시)
+  - [ ] 타임존: Asia/Seoul
+  - [ ] Target: Cloud Run Job (`kb-batch`)
+  - [ ] 서비스 계정: 적절한 권한 부여
+- [ ] 첫 실행 대기 또는 수동 트리거
+- [ ] 실행 이력 확인
+
+### React 빌드 및 배포
+- [ ] `frontend/` 디렉토리에서 빌드
+  - [ ] `.env.production` 생성
+    - [ ] `VITE_API_BASE_URL=https://kb-api-xxxxx.run.app`
+  - [ ] `npm run build`
+  - [ ] `dist/` 디렉토리 생성 확인
+- [ ] 배포 옵션 선택
+  - [ ] **Option A**: Cloud Run (컨테이너)
+    - [ ] Nginx Dockerfile 작성
+    - [ ] Docker 빌드 및 푸시
+    - [ ] Cloud Run 서비스 배포
+  - [ ] **Option B**: Vercel (권장)
+    - [ ] Vercel CLI 설치 (`npm i -g vercel`)
+    - [ ] `vercel login`
+    - [ ] `vercel` (배포)
+    - [ ] 환경 변수 설정 (Vercel Dashboard)
+- [ ] 배포 확인
+  - [ ] 프론트엔드 URL 접속
+  - [ ] 채팅 기능 테스트
+  - [ ] 통계 페이지 테스트
+
+### 커스텀 도메인 설정 (Optional)
+- [ ] 도메인 구매 (예: kb.yourdomain.com)
+- [ ] Cloud Run에 커스텀 도메인 매핑
+- [ ] SSL 인증서 자동 프로비저닝
+- [ ] DNS 레코드 설정
+
+### Week 8 마무리
+- [ ] 배포 문서 작성 (`docs/DEPLOYMENT.md`)
+- [ ] 프로덕션 환경 설정 확인
+- [ ] 비용 모니터링 설정 (Budget Alerts)
+- [ ] Git 커밋 (`Week 8 완료: GCP 배포`)
+
+---
+
+## 📋 Week 9: 테스트 및 최적화
+
+### 단위 테스트 작성 (pytest)
+- [ ] `backend/tests/unit/test_jira_client.py`
+- [ ] `backend/tests/unit/test_confluence_client.py`
+- [ ] `backend/tests/unit/test_embedding_service.py`
+- [ ] `backend/tests/unit/test_vector_db_service.py`
+- [ ] `backend/tests/unit/test_rag_service.py`
+- [ ] `backend/tests/unit/test_agents.py` (각 에이전트)
+- [ ] 테스트 실행: `pytest tests/unit/ -v`
+- [ ] 커버리지 확인: `pytest --cov=app --cov-report=html`
+
+### 통합 테스트 작성
+- [ ] `backend/tests/integration/test_workflow.py`
+  - [ ] End-to-end 워크플로우 테스트
+- [ ] `backend/tests/integration/test_api.py`
+  - [ ] FastAPI 엔드포인트 테스트 (TestClient)
+- [ ] `backend/tests/integration/test_batch.py`
+  - [ ] 배치 프로세스 테스트
+- [ ] 테스트 실행: `pytest tests/integration/ -v`
+
+### 배치 프로세스 통합 테스트
+- [ ] 로컬에서 전체 배치 실행
+  - [ ] 데이터 수집 → 청킹 → 임베딩 → FAISS 업데이트
+- [ ] 증분 업데이트 시나리오 테스트
+  - [ ] Jira/Confluence에서 문서 수정
+  - [ ] 배치 재실행
+  - [ ] 변경사항 반영 확인
+- [ ] 삭제 시나리오 테스트
+  - [ ] 문서 삭제 후 배치 실행
+  - [ ] deleted=True 확인
+
+### API 부하 테스트 (Locust)
+- [ ] `backend/tests/load/locustfile.py` 작성
+  - [ ] POST /api/chat 부하 테스트
+  - [ ] 동시 사용자 100명 시뮬레이션
+- [ ] Locust 실행
+  - [ ] `locust -f tests/load/locustfile.py`
+- [ ] 결과 분석
+  - [ ] 평균 응답 시간
+  - [ ] 처리량 (RPS)
+  - [ ] 에러율
+
+### 임베딩 배치 크기 최적화
+- [ ] 배치 크기별 성능 테스트 (50, 100, 200)
+- [ ] 최적 배치 크기 선택 (속도 vs 메모리)
+
+### FAISS 검색 속도 최적화
+- [ ] FAISS 인덱스 타입 변경 고려
+  - [ ] IndexFlatL2 (현재): 정확하지만 느림
+  - [ ] IndexIVFFlat: 속도 개선, 약간의 정확도 손실
+- [ ] 인덱스 크기별 성능 측정
+- [ ] 필요시 인덱스 타입 변경
+
+### 메모리 사용량 모니터링
+- [ ] `memory_profiler` 설치
+- [ ] 배치 프로세스 메모리 프로파일링
+- [ ] 메모리 누수 확인 및 수정
+- [ ] Cloud Run 메모리 설정 조정 (필요시)
+
+### 에러 로깅 및 알림 설정
+- [ ] Cloud Logging 필터 생성
+  - [ ] ERROR 레벨 로그만 필터링
+- [ ] Cloud Monitoring 알림 정책 생성
+  - [ ] 배치 실패 시 이메일 알림
+  - [ ] API 에러율 5% 초과 시 알림
+- [ ] Slack 웹훅 통합 (Optional)
+  - [ ] 배치 완료/실패 알림
+  - [ ] 통계 요약 전송
+
+### 성능 튜닝 체크리스트
+- [ ] PostgreSQL 인덱스 최적화
+  - [ ] EXPLAIN ANALYZE로 쿼리 분석
+  - [ ] 필요시 추가 인덱스 생성
+- [ ] FastAPI 응답 캐싱 (Optional)
+  - [ ] Redis 도입 고려
+- [ ] LLM 호출 최적화
+  - [ ] 프롬프트 길이 최소화
+  - [ ] Temperature, Max tokens 조정
+
+### Week 9 마무리
+- [ ] 테스트 커버리지 80% 이상 달성
+- [ ] 성능 테스트 결과 문서화
+- [ ] 최적화 결과 정리
+- [ ] Git 커밋 (`Week 9 완료: 테스트 및 최적화`)
+
+---
+
+## 📋 Week 10: 문서화 및 런칭
+
+### README.md 작성
+- [ ] 프로젝트 개요
+- [ ] 주요 기능
+- [ ] 아키텍처 다이어그램
+- [ ] 기술 스택
+- [ ] 로컬 개발 환경 설정
+  - [ ] 사전 요구사항
+  - [ ] 설치 방법
+  - [ ] 환경 변수 설정
+  - [ ] 실행 방법
+- [ ] 배포 방법 (간략)
+- [ ] 라이선스
+
+### CLAUDE.md 작성 (개발 가이드)
+- [ ] 프로젝트 구조 설명
+- [ ] 각 디렉토리/파일 역할
+- [ ] 개발 워크플로우
+- [ ] 코딩 컨벤션
+- [ ] 테스트 작성 가이드
+- [ ] 트러블슈팅 가이드
+- [ ] 주요 의사결정 기록 (ADR)
+
+### API 문서 완성
+- [ ] `docs/API.md` 작성
+  - [ ] 각 엔드포인트 상세 설명
+  - [ ] Request/Response 예시
+  - [ ] 에러 코드
+  - [ ] 인증 방법 (추후)
+- [ ] Swagger UI 스크린샷 추가
+
+### 아키텍처 문서
+- [ ] `docs/ARCHITECTURE.md` 작성
+  - [ ] 시스템 아키텍처 다이어그램
+  - [ ] 데이터 플로우
+  - [ ] LangGraph 워크플로우 설명
+  - [ ] 배치 프로세스 상세
+  - [ ] 기술적 결정 사항 (Why GCP, Why FAISS 등)
+
+### 배포 가이드
+- [ ] `docs/DEPLOYMENT.md` 작성
+  - [ ] GCP 프로젝트 생성 단계
+  - [ ] Cloud SQL 설정
+  - [ ] Secret Manager 설정
+  - [ ] Cloud Run 배포 단계
+  - [ ] Cloud Scheduler 설정
+  - [ ] 프론트엔드 배포 (Vercel)
+  - [ ] 비용 최적화 팁
+
+### 사용자 가이드
+- [ ] `docs/USER_GUIDE.md` 작성
+  - [ ] 채팅 사용 방법
+  - [ ] 출처 링크 활용
+  - [ ] 피드백 제공 방법
+  - [ ] FAQ
+
+### 관리자 매뉴얼
+- [ ] `docs/ADMIN_GUIDE.md` 작성
+  - [ ] 통계 대시보드 해석
+  - [ ] 배치 모니터링
+  - [ ] 데이터 품질 관리
+  - [ ] 장애 대응 절차
+  - [ ] 백업 및 복구
+
+### 배치 모니터링 대시보드 설정
+- [ ] Cloud Monitoring 대시보드 생성
+  - [ ] 배치 실행 성공률
+  - [ ] 처리된 문서 수 (시계열)
+  - [ ] API 응답 시간
+  - [ ] 에러율
+- [ ] 대시보드 스크린샷 문서에 추가
+
+### 베타 사용자 테스트
+- [ ] 베타 테스터 5-10명 모집
+- [ ] 테스트 시나리오 작성
+  - [ ] 일반적인 질문 10개
+  - [ ] 엣지 케이스 5개
+- [ ] 피드백 수집 양식 준비 (Google Forms)
+- [ ] 베타 테스트 실시 (1주일)
+- [ ] 피드백 분석
+
+### 피드백 반영 및 개선
+- [ ] 베타 테스터 피드백 리뷰
+- [ ] 버그 수정
+- [ ] UX 개선 사항 반영
+- [ ] 문서 업데이트
+
+### 런칭 준비 체크리스트
+- [ ] 모든 테스트 통과 확인
+- [ ] 프로덕션 환경 설정 재확인
+- [ ] 배치 스케줄러 동작 확인 (최소 3일)
+- [ ] 모니터링 알림 동작 확인
+- [ ] 문서 최종 검토
+- [ ] 백업 계획 수립
+- [ ] 롤백 계획 수립
+
+### 정식 런칭 🚀
+- [ ] 런칭 공지
+- [ ] 사용자 교육 세션 (Optional)
+- [ ] 초기 사용자 모니터링 (첫 1주일)
+- [ ] 피드백 지속 수집
+
+### Week 10 마무리
+- [ ] 모든 문서 최종 커밋
+- [ ] GitHub 저장소 README 업데이트
+- [ ] Git 태그 생성 (`v1.0.0`)
+- [ ] 프로젝트 회고 (Retrospective)
+- [ ] 축하 🎉
+
+---
+
+## 📋 Phase 2: 추후 개선 사항 (백로그)
+
+### 인증 및 권한
+- [ ] Google OAuth 2.0 통합
+- [ ] 사용자 관리 시스템
+- [ ] Jira/Confluence 권한 상속
+- [ ] Admin 역할 관리
+
+### 고급 기능
+- [ ] 멀티턴 대화 (대화 컨텍스트 유지)
+- [ ] 문서 요약 기능
+- [ ] 스트리밍 응답 (SSE)
+- [ ] 음성 입력/출력
+- [ ] 다국어 지원
+
+### 모니터링 및 분석
+- [ ] Google Analytics 4 통합
+- [ ] 사용자 행동 분석
+- [ ] A/B 테스트 시스템
+- [ ] 품질 지표 자동 리포팅
+
+### 확장성
+- [ ] Slack 봇 통합
+- [ ] Microsoft Teams 봇 통합
+- [ ] 모바일 앱 (React Native)
+- [ ] GraphQL API
+
+### 성능 개선
+- [ ] Redis 캐싱 도입
+- [ ] FAISS GPU 버전
+- [ ] Batch 병렬 처리
+- [ ] CDN 도입 (프론트엔드)
+
+---
+
+**작성일**: 2025-01-24
+**프로젝트 위치**: `/Users/sunchulkim/src/knowledge-base-ai-chatbot/`
+**예상 완료**: Week 10 (약 2.5개월)
