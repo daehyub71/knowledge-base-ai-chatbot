@@ -22,14 +22,47 @@ Jira/Confluence 문서 기반 RAG(Retrieval-Augmented Generation) AI 챗봇 시�
 - **ORM**: SQLAlchemy 2.0
 - **Settings**: pydantic-settings
 
-### AI/ML (예정)
-- **LLM**: Azure OpenAI (GPT-4o) / OpenAI / Anthropic Claude
-- **Embeddings**: text-embedding-3-large
-- **Vector DB**: FAISS
+### AI/ML
+- **LLM**: OpenAI GPT-4o-mini / Azure OpenAI GPT-4o
+- **Embeddings**: text-embedding-3-large (3072 dimensions)
+- **Vector DB**: FAISS IndexFlatL2
 - **Framework**: LangChain, LangGraph
 
 ### External APIs
 - **Atlassian**: atlassian-python-api (Jira, Confluence)
+
+## LangGraph Workflow
+
+사용자 질문에 대해 RAG 기반 답변을 생성하는 LangGraph 워크플로우입니다.
+
+![LangGraph Workflow](docs/workflow_diagram.png)
+
+### 워크플로우 단계
+
+| 단계 | Agent | 설명 |
+|------|-------|------|
+| 1 | **Query Analyzer** | 사용자 쿼리 분석 (intent, keywords, filters 추출) |
+| 2 | **RAG Searcher** | FAISS 벡터 DB에서 유사 문서 검색 (Top-5) |
+| 3 | **Relevance Checker** | 검색 결과 관련성 평가 (threshold + LLM 검증) |
+| 4a | **RAG Responder** | 관련 문서 기반 응답 생성 (출처 포함) |
+| 4b | **LLM Fallback** | 관련 문서 없을 시 일반 지식 기반 응답 |
+| 5 | **Response Formatter** | 최종 응답 마크다운 포맷팅 |
+
+### 응답 유형
+
+- **RAG 응답**: 회사 문서(Jira/Confluence) 기반 답변 + 출처 링크
+- **Fallback 응답**: 일반 LLM 지식 기반 답변 + 면책 문구
+
+### 실행 예시
+
+```python
+from app.core.workflow import run_workflow
+
+result = run_workflow("Confluence API 사용법을 알려주세요")
+print(result["response"])
+print(f"응답 유형: {result['response_type']}")  # rag 또는 llm_fallback
+print(f"출처: {len(result['sources'])}개 문서")
+```
 
 ## 프로젝트 구조
 
@@ -37,29 +70,47 @@ Jira/Confluence 문서 기반 RAG(Retrieval-Augmented Generation) AI 챗봇 시�
 knowledge-base-ai-chatbot/
 ├── backend/
 │   ├── app/
-│   │   ├── config.py              # 환경 설정
-│   │   ├── database.py            # DB 연결
-│   │   ├── models/                # SQLAlchemy 모델
-│   │   │   ├── document.py        # 문서, 청크
-│   │   │   ├── chat.py            # 채팅 이력
-│   │   │   ├── feedback.py        # 피드백
-│   │   │   └── sync.py            # 동기화 이력
+│   │   ├── config.py                    # 환경 설정
+│   │   ├── database.py                  # DB 연결
+│   │   ├── models/                      # SQLAlchemy 모델
+│   │   │   ├── document.py              # 문서, 청크
+│   │   │   ├── chat.py                  # 채팅 이력
+│   │   │   ├── feedback.py              # 피드백
+│   │   │   └── sync.py                  # 동기화 이력
+│   │   ├── utils/                       # 유틸리티
+│   │   │   ├── text_splitter.py         # 텍스트 청킹
+│   │   │   └── storage.py               # Cloud Storage
 │   │   └── core/
-│   │       └── services/          # 비즈니스 로직
-│   │           ├── jira_client.py
-│   │           ├── confluence_client.py
-│   │           ├── data_collector.py
-│   │           ├── incremental_sync.py
-│   │           └── deletion_detector.py
+│   │       ├── services/                # 비즈니스 로직
+│   │       │   ├── jira_client.py       # Jira API
+│   │       │   ├── confluence_client.py # Confluence API
+│   │       │   ├── data_collector.py    # 데이터 수집
+│   │       │   ├── embedding_service.py # OpenAI 임베딩
+│   │       │   ├── vector_db_service.py # FAISS 벡터 DB
+│   │       │   ├── rag_service.py       # RAG 검색
+│   │       │   └── llm_service.py       # LLM 서비스
+│   │       ├── agents/                  # LangGraph 에이전트
+│   │       │   ├── query_analyzer.py    # 쿼리 분석
+│   │       │   ├── rag_searcher.py      # RAG 검색
+│   │       │   ├── relevance_checker.py # 관련성 평가
+│   │       │   ├── rag_responder.py     # RAG 응답
+│   │       │   ├── llm_fallback.py      # LLM 폴백
+│   │       │   └── response_formatter.py # 응답 포맷팅
+│   │       └── workflow/                # LangGraph 워크플로우
+│   │           ├── state.py             # ChatState 정의
+│   │           └── graph.py             # 워크플로우 그래프
 │   ├── scripts/
-│   │   ├── init_db.py             # DB 초기화
-│   │   ├── collect_data.py        # 데이터 수집 CLI
-│   │   ├── test_jira.py           # Jira 테스트
-│   │   └── test_confluence.py     # Confluence 테스트
+│   │   ├── init_db.py                   # DB 초기화
+│   │   ├── collect_data.py              # 데이터 수집 CLI
+│   │   ├── build_vector_db.py           # 벡터 DB 빌드
+│   │   ├── test_search.py               # 검색 테스트
+│   │   └── test_workflow.py             # 워크플로우 테스트
+│   ├── data/
+│   │   └── vector_db/                   # FAISS 인덱스
 │   ├── requirements.txt
-│   ├── .env.example
-│   └── .env                       # (gitignore)
+│   └── .env                             # (gitignore)
 └── docs/
+    ├── workflow_diagram.png             # 워크플로우 다이어그램
     ├── knowledge-base-ai-chatbot-plan.md
     └── knowledge-base-ai-chatbot-todo.md
 ```
@@ -130,7 +181,20 @@ python scripts/collect_data.py --source all --detect-deleted
 python scripts/collect_data.py --source all --full-sync
 ```
 
-### 5. 연결 테스트
+### 5. 벡터 DB 빌드
+
+```bash
+# 벡터 DB 빌드 (청킹 + 임베딩 + FAISS 인덱스)
+python scripts/build_vector_db.py
+
+# 검색 테스트
+python scripts/test_search.py
+
+# 워크플로우 테스트
+python scripts/test_workflow.py --query "API 사용법을 알려주세요"
+```
+
+### 6. 연결 테스트
 
 ```bash
 # Jira 연결 테스트
@@ -185,9 +249,13 @@ JIRA_PASSWORD=your_api_token  # Cloud의 경우 API 토큰
 ## 개발 로드맵
 
 - [x] Week 1: 프로젝트 초기 설정 및 데이터 수집
-- [ ] Week 2: 임베딩 및 벡터 DB 구축
-- [ ] Week 3: RAG 파이프라인 및 LLM 연동
-- [ ] Week 4: API 엔드포인트 및 프론트엔드
+- [x] Week 2: 임베딩 및 벡터 DB 구축 (FAISS, text-embedding-3-large)
+- [x] Week 3: LangGraph 워크플로우 및 RAG 파이프라인
+- [ ] Week 4: FastAPI 엔드포인트 구현
+- [ ] Week 5: 배치 프로세스 (증분 동기화)
+- [ ] Week 6-7: React 프론트엔드 (Chat, Dashboard, Settings)
+- [ ] Week 8: GCP 배포 (Cloud Run, Cloud SQL)
+- [ ] Week 9-10: 테스트, 최적화, 문서화
 
 ## 라이선스
 
