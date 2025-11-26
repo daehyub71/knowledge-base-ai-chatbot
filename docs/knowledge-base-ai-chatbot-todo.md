@@ -113,10 +113,10 @@
   - [x] argparse로 `--source jira/confluence` 옵션
   - [x] 전체 수집 실행
   - [x] 수집 결과 통계 출력
-- [ ] 스크립트 실행하여 실제 데이터 수집
-  - [ ] `python scripts/collect_data.py --source jira`
-  - [ ] `python scripts/collect_data.py --source confluence`
-  - [ ] PostgreSQL에서 데이터 확인 (`SELECT COUNT(*) FROM documents;`)
+- [x] 스크립트 실행하여 실제 데이터 수집
+  - [x] `python scripts/collect_data.py --source jira` (0개 이슈)
+  - [x] `python scripts/collect_data.py --source confluence` (9개 페이지)
+  - [x] PostgreSQL에서 데이터 확인 (`SELECT COUNT(*) FROM documents;`)
 
 ### 증분 업데이트 로직 구현
 - [x] `backend/app/core/services/incremental_sync.py` 작성
@@ -151,47 +151,47 @@
 ## 📋 Week 2: RAG 시스템 구축
 
 ### 텍스트 청킹 구현
-- [ ] `backend/app/utils/text_splitter.py` 작성
-  - [ ] `chunk_documents(documents)` 함수
-    - [ ] RecursiveCharacterTextSplitter 사용
-    - [ ] chunk_size=1000, chunk_overlap=200
-    - [ ] 청크 목록 반환 (텍스트 + 메타데이터)
-- [ ] 청킹 테스트
-  - [ ] 샘플 문서로 청킹 실행
-  - [ ] 청크 개수, 크기 확인
+- [x] `backend/app/utils/text_splitter.py` 작성
+  - [x] `chunk_documents(documents)` 함수
+    - [x] RecursiveCharacterTextSplitter 사용
+    - [x] chunk_size=1000, chunk_overlap=200
+    - [x] 청크 목록 반환 (텍스트 + 메타데이터)
+- [x] 청킹 테스트
+  - [x] 샘플 문서로 청킹 실행
+  - [x] 청크 개수, 크기 확인
 
 ### OpenAI 임베딩 서비스 구현
-- [ ] `backend/app/core/services/embedding_service.py` 작성
-  - [ ] `EmbeddingService` 클래스 생성
-  - [ ] `__init__`: OpenAI 클라이언트 초기화
-  - [ ] `get_embedding(text)` 함수
-    - [ ] text-embedding-3-large 호출
-    - [ ] 벡터 반환 (3072차원)
-  - [ ] `get_embeddings_batch(texts)` 함수
-    - [ ] 배치 처리 (100개씩)
-    - [ ] 벡터 리스트 반환
-- [ ] 임베딩 테스트
-  - [ ] 샘플 텍스트 5개로 임베딩 생성
-  - [ ] 벡터 차원 확인
+- [x] `backend/app/core/services/embedding_service.py` 작성
+  - [x] `EmbeddingService` 클래스 생성
+  - [x] `__init__`: OpenAI 클라이언트 초기화
+  - [x] `get_embedding(text)` 함수
+    - [x] text-embedding-3-large 호출
+    - [x] 벡터 반환 (3072차원)
+  - [x] `get_embeddings_batch(texts)` 함수
+    - [x] 배치 처리 (100개씩)
+    - [x] 벡터 리스트 반환
+- [x] 임베딩 테스트
+  - [x] 샘플 텍스트 5개로 임베딩 생성
+  - [x] 벡터 차원 확인 (3072차원)
 
 ### FAISS 인덱스 빌드 로직 구현
-- [ ] `backend/app/core/services/vector_db_service.py` 작성
-  - [ ] `VectorDBService` 클래스 생성
-  - [ ] `create_index(dimension)` 함수
-    - [ ] FAISS IndexFlatL2 생성
-  - [ ] `add_vectors(vectors, metadata)` 함수
-    - [ ] 인덱스에 벡터 추가
-    - [ ] metadata.pkl에 메타데이터 저장
-  - [ ] `search(query_vector, k=5)` 함수
-    - [ ] 유사도 검색
-    - [ ] (index_id, score) 리스트 반환
-  - [ ] `save_index(filepath)` 함수
-    - [ ] FAISS 인덱스 저장
-  - [ ] `load_index(filepath)` 함수
-    - [ ] FAISS 인덱스 로드
-- [ ] FAISS 인덱스 테스트
-  - [ ] 샘플 벡터 10개로 인덱스 생성
-  - [ ] 검색 테스트
+- [x] `backend/app/core/services/vector_db_service.py` 작성
+  - [x] `VectorDBService` 클래스 생성
+  - [x] `create_index(dimension)` 함수
+    - [x] FAISS IndexFlatL2 생성
+  - [x] `add_vectors(vectors, metadata)` 함수
+    - [x] 인덱스에 벡터 추가
+    - [x] metadata.pkl에 메타데이터 저장
+  - [x] `search(query_vector, k=5)` 함수
+    - [x] 유사도 검색
+    - [x] (index_id, score) 리스트 반환
+  - [x] `save_index(filepath)` 함수
+    - [x] FAISS 인덱스 저장
+  - [x] `load_index(filepath)` 함수
+    - [x] FAISS 인덱스 로드
+- [x] FAISS 인덱스 테스트
+  - [x] 샘플 벡터 10개로 인덱스 생성
+  - [x] 검색 테스트
 
 ### Cloud Storage 통합
 - [ ] GCP 프로젝트 생성 (콘솔에서)
@@ -201,56 +201,56 @@
 - [ ] 서비스 계정 생성 및 키 다운로드
   - [ ] IAM > 서비스 계정 > 키 생성 (JSON)
   - [ ] `backend/service-account.json` 저장 (gitignore 추가)
-- [ ] `backend/app/utils/storage.py` 작성
-  - [ ] `StorageClient` 클래스 생성
-  - [ ] `__init__`: google-cloud-storage 클라이언트 초기화
-  - [ ] `upload_file(local_path, gcs_path)` 함수
-  - [ ] `download_file(gcs_path, local_path)` 함수
-  - [ ] `file_exists(gcs_path)` 함수
-- [ ] Cloud Storage 테스트
+- [x] `backend/app/utils/storage.py` 작성
+  - [x] `StorageClient` 클래스 생성
+  - [x] `__init__`: google-cloud-storage 클라이언트 초기화
+  - [x] `upload_file(local_path, gcs_path)` 함수
+  - [x] `download_file(gcs_path, local_path)` 함수
+  - [x] `file_exists(gcs_path)` 함수
+- [ ] Cloud Storage 테스트 (GCP 설정 후 진행)
   - [ ] 샘플 파일 업로드
   - [ ] 다운로드 후 내용 확인
 
 ### 벡터 DB 빌드 스크립트 작성
-- [ ] `backend/scripts/build_vector_db.py` 작성
-  - [ ] PostgreSQL에서 모든 문서 조회
-  - [ ] 텍스트 청킹 (DocumentChunk 테이블에 저장)
-  - [ ] 각 청크에 대해 임베딩 생성
-  - [ ] FAISS 인덱스에 추가
-  - [ ] faiss_index_id 매핑 저장 (DocumentChunk 테이블)
-  - [ ] FAISS 인덱스 저장 (로컬)
-  - [ ] Cloud Storage에 업로드
-  - [ ] 진행 상황 로깅
-- [ ] 스크립트 실행
-  - [ ] `python scripts/build_vector_db.py`
-  - [ ] 실행 시간 측정 (예상: 10-30분)
-  - [ ] FAISS 인덱스 파일 생성 확인
+- [x] `backend/scripts/build_vector_db.py` 작성
+  - [x] PostgreSQL에서 모든 문서 조회
+  - [x] 텍스트 청킹 (DocumentChunk 테이블에 저장)
+  - [x] 각 청크에 대해 임베딩 생성
+  - [x] FAISS 인덱스에 추가
+  - [x] faiss_index_id 매핑 저장 (DocumentChunk 테이블)
+  - [x] FAISS 인덱스 저장 (로컬)
+  - [ ] Cloud Storage에 업로드 (Week 8 배포 시 진행)
+  - [x] 진행 상황 로깅
+- [x] 스크립트 실행
+  - [x] `python scripts/build_vector_db.py`
+  - [x] 실행 시간: 2.14초 (9개 문서, 9개 청크)
+  - [x] FAISS 인덱스 파일 생성 확인 (`data/vector_db/faiss.index`)
 
 ### 벡터 검색 함수 구현
-- [ ] `backend/app/core/services/rag_service.py` 작성
-  - [ ] `RAGService` 클래스 생성
-  - [ ] `__init__`: VectorDBService, EmbeddingService 초기화
-  - [ ] `search_documents(query, top_k=5)` 함수
-    - [ ] 쿼리 임베딩 생성
-    - [ ] FAISS 검색
-    - [ ] PostgreSQL에서 메타데이터 조회
-    - [ ] 결과 반환 (doc_id, title, content, score, url, author, updated_at)
+- [x] `backend/app/core/services/rag_service.py` 작성
+  - [x] `RAGService` 클래스 생성
+  - [x] `__init__`: VectorDBService, EmbeddingService 초기화
+  - [x] `search_documents(query, top_k=5)` 함수
+    - [x] 쿼리 임베딩 생성
+    - [x] FAISS 검색
+    - [x] PostgreSQL에서 메타데이터 조회
+    - [x] 결과 반환 (doc_id, title, content, score, url, author, updated_at)
 
 ### 메타데이터 필터링 구현
-- [ ] `RAGService.search_documents()`에 필터링 추가
-  - [ ] `deleted=False` 문서만 반환
-  - [ ] 옵션: doc_type 필터 (jira/confluence)
-  - [ ] 옵션: 날짜 범위 필터
+- [x] `RAGService.search_documents()`에 필터링 추가
+  - [x] `deleted=False` 문서만 반환
+  - [x] 옵션: doc_type 필터 (jira/confluence)
+  - [x] 옵션: 날짜 범위 필터
 
 ### 검색 품질 테스트
-- [ ] `backend/scripts/test_search.py` 작성
-  - [ ] 10개 샘플 쿼리 준비
-  - [ ] 각 쿼리에 대해 검색 실행
-  - [ ] Top-5 결과 출력
-  - [ ] 유사도 점수 확인
-- [ ] 검색 품질 평가
-  - [ ] 관련 문서가 상위 결과에 나오는지 확인
-  - [ ] 임계값 0.7이 적절한지 판단
+- [x] `backend/scripts/test_search.py` 작성
+  - [x] 10개 샘플 쿼리 준비
+  - [x] 각 쿼리에 대해 검색 실행
+  - [x] Top-5 결과 출력
+  - [x] 유사도 점수 확인
+- [x] 검색 품질 평가
+  - [x] 관련 문서가 상위 결과에 나오는지 확인 (정상 동작)
+  - [x] 임계값 조정: 0.7 → 0.3~0.4 권장 (현재 데이터 기준)
 
 ### Week 2 마무리
 - [ ] 코드 리뷰 및 리팩토링
@@ -263,135 +263,136 @@
 ## 📋 Week 3: LangGraph 워크플로우 구현
 
 ### LangGraph State 정의
-- [ ] `backend/app/core/workflow/state.py` 작성
-  - [ ] `ChatState` TypedDict 정의
-    - [ ] user_query: str
-    - [ ] analyzed_query: dict
-    - [ ] search_results: List[dict]
-    - [ ] relevance_decision: Literal["relevant", "irrelevant"]
-    - [ ] response: str
-    - [ ] response_type: Literal["rag", "llm_fallback"]
-    - [ ] sources: List[dict]
+- [x] `backend/app/core/workflow/state.py` 작성
+  - [x] `ChatState` TypedDict 정의
+    - [x] user_query: str
+    - [x] analyzed_query: dict
+    - [x] search_results: List[dict]
+    - [x] relevance_decision: Literal["relevant", "irrelevant"]
+    - [x] response: str
+    - [x] response_type: Literal["rag", "llm_fallback"]
+    - [x] sources: List[dict]
 
 ### OpenAI LLM 서비스 구현
-- [ ] `backend/app/core/services/llm_service.py` 작성
-  - [ ] `LLMService` 클래스 생성
-  - [ ] `__init__`: OpenAI 클라이언트 초기화 (gpt-4o-mini, gpt-4o 선택 가능)
-  - [ ] `generate(prompt, system_message=None)` 함수
-    - [ ] ChatCompletion API 호출
-    - [ ] 응답 텍스트 반환
-  - [ ] `generate_json(prompt)` 함수
-    - [ ] JSON 형식 응답 강제
-    - [ ] 파싱하여 dict 반환
+- [x] `backend/app/core/services/llm_service.py` 작성
+  - [x] `LLMService` 클래스 생성
+  - [x] `__init__`: OpenAI 클라이언트 초기화 (gpt-4o-mini, gpt-4o 선택 가능)
+  - [x] `generate(prompt, system_message=None)` 함수
+    - [x] ChatCompletion API 호출
+    - [x] 응답 텍스트 반환
+  - [x] `generate_json(prompt)` 함수 → `analyze_query()` 로 구현
+    - [x] JSON 형식 응답 강제
+    - [x] 파싱하여 dict 반환
 
 ### Agent 1: QueryAnalyzer
-- [ ] `backend/app/core/agents/query_analyzer.py` 작성
-  - [ ] `query_analyzer(state: ChatState) -> ChatState` 함수
-  - [ ] 프롬프트 작성
-    - [ ] 사용자 문의 분석 요청
-    - [ ] intent, keywords, entities 추출
-    - [ ] JSON 형식으로 반환
-  - [ ] LLMService.generate_json() 호출
-  - [ ] state["analyzed_query"] 업데이트
-- [ ] 단위 테스트 작성
-  - [ ] 샘플 쿼리 5개로 테스트
-  - [ ] 출력 형식 검증
+- [x] `backend/app/core/agents/query_analyzer.py` 작성
+  - [x] `query_analyzer(state: ChatState) -> ChatState` 함수
+  - [x] 프롬프트 작성
+    - [x] 사용자 문의 분석 요청
+    - [x] intent, keywords, entities 추출
+    - [x] JSON 형식으로 반환
+  - [x] LLMService.analyze_query() 호출
+  - [x] state["analyzed_query"] 업데이트
+- [x] 단위 테스트 작성
+  - [x] 샘플 쿼리 5개로 테스트
+  - [x] 출력 형식 검증
 
 ### Agent 2: RAGSearcher
-- [ ] `backend/app/core/agents/rag_searcher.py` 작성
-  - [ ] `rag_searcher(state: ChatState) -> ChatState` 함수
-  - [ ] RAGService.search_documents() 호출
-  - [ ] Top-K 결과 가져오기 (K=5)
-  - [ ] state["search_results"] 업데이트
-- [ ] 단위 테스트 작성
-  - [ ] 샘플 쿼리로 검색 실행
-  - [ ] 결과 개수 확인
+- [x] `backend/app/core/agents/rag_searcher.py` 작성
+  - [x] `rag_searcher(state: ChatState) -> ChatState` 함수
+  - [x] RAGService.search_documents() 호출
+  - [x] Top-K 결과 가져오기 (K=5)
+  - [x] state["search_results"] 업데이트
+- [x] 단위 테스트 작성
+  - [x] 샘플 쿼리로 검색 실행
+  - [x] 결과 개수 확인
 
 ### Agent 3: RelevanceChecker
-- [ ] `backend/app/core/agents/relevance_checker.py` 작성
-  - [ ] `relevance_checker(state: ChatState) -> ChatState` 함수
-  - [ ] 단계 1: 유사도 점수 임계값 체크 (0.7)
-    - [ ] 최고 점수가 0.7 미만이면 "irrelevant"
-  - [ ] 단계 2: LLM으로 관련성 재확인
-    - [ ] 프롬프트: "이 문서가 질문에 답변할 수 있나요?"
-    - [ ] yes/no 응답
-  - [ ] state["relevance_decision"] 업데이트
-- [ ] 단위 테스트 작성
-  - [ ] 관련 있는 케이스, 없는 케이스 각각 테스트
+- [x] `backend/app/core/agents/relevance_checker.py` 작성
+  - [x] `relevance_checker(state: ChatState) -> ChatState` 함수
+  - [x] 단계 1: 유사도 점수 임계값 체크 (0.35로 조정)
+    - [x] 최고 점수가 임계값 미만이면 "irrelevant"
+  - [x] 단계 2: LLM으로 관련성 재확인
+    - [x] 프롬프트: "이 문서가 질문에 답변할 수 있나요?"
+    - [x] yes/no 응답
+  - [x] state["relevance_decision"] 업데이트
+- [x] 단위 테스트 작성
+  - [x] 관련 있는 케이스, 없는 케이스 각각 테스트
 
 ### Agent 4a: RAGResponder
-- [ ] `backend/app/core/agents/rag_responder.py` 작성
-  - [ ] `rag_responder(state: ChatState) -> ChatState` 함수
-  - [ ] 프롬프트 작성
-    - [ ] 검색된 문서 컨텍스트 포함 (Top-3)
-    - [ ] 사용자 질문에 답변 요청
-  - [ ] LLMService.generate() 호출
-  - [ ] state["response"] 업데이트
-  - [ ] state["response_type"] = "rag"
-  - [ ] state["sources"] = 검색 결과
-- [ ] 단위 테스트 작성
-  - [ ] 샘플 검색 결과로 답변 생성
+- [x] `backend/app/core/agents/rag_responder.py` 작성
+  - [x] `rag_responder(state: ChatState) -> ChatState` 함수
+  - [x] 프롬프트 작성
+    - [x] 검색된 문서 컨텍스트 포함 (Top-3)
+    - [x] 사용자 질문에 답변 요청
+  - [x] LLMService.generate_with_context() 호출
+  - [x] state["response"] 업데이트
+  - [x] state["response_type"] = "rag"
+  - [x] state["sources"] = 검색 결과
+- [x] 단위 테스트 작성
+  - [x] 샘플 검색 결과로 답변 생성
 
 ### Agent 4b: LLMFallback
-- [ ] `backend/app/core/agents/llm_fallback.py` 작성
-  - [ ] `llm_fallback(state: ChatState) -> ChatState` 함수
-  - [ ] 프롬프트 작성
-    - [ ] "회사 문서에 없는 내용입니다"
-    - [ ] 일반 지식으로 답변
-    - [ ] 답변 끝에 면책 문구 추가
-  - [ ] LLMService.generate() 호출
-  - [ ] state["response"] 업데이트
-  - [ ] state["response_type"] = "llm_fallback"
-  - [ ] state["sources"] = []
-- [ ] 단위 테스트 작성
-  - [ ] 관련 문서 없는 쿼리로 답변 생성
+- [x] `backend/app/core/agents/llm_fallback.py` 작성
+  - [x] `llm_fallback(state: ChatState) -> ChatState` 함수
+  - [x] 프롬프트 작성
+    - [x] "회사 문서에 없는 내용입니다"
+    - [x] 일반 지식으로 답변
+    - [x] 답변 끝에 면책 문구 추가
+  - [x] LLMService.generate() 호출
+  - [x] state["response"] 업데이트
+  - [x] state["response_type"] = "llm_fallback"
+  - [x] state["sources"] = []
+- [x] 단위 테스트 작성
+  - [x] 관련 문서 없는 쿼리로 답변 생성
 
 ### Agent 5: ResponseFormatter
-- [ ] `backend/app/core/agents/response_formatter.py` 작성
-  - [ ] `response_formatter(state: ChatState) -> ChatState` 함수
-  - [ ] Markdown 형식으로 포맷팅
-    - [ ] 답변 본문
-    - [ ] "### 📚 참고 문서" 섹션
-    - [ ] 각 문서: [제목](URL), 작성자, 업데이트 시간
-  - [ ] state["response"] 업데이트
-- [ ] 단위 테스트 작성
-  - [ ] 출력 형식 검증
+- [x] `backend/app/core/agents/response_formatter.py` 작성
+  - [x] `response_formatter(state: ChatState) -> ChatState` 함수
+  - [x] Markdown 형식으로 포맷팅
+    - [x] 답변 본문
+    - [x] "### 📚 참고 문서" 섹션
+    - [x] 각 문서: [제목](URL), doc_type 표시
+  - [x] state["response"] 업데이트
+- [x] 단위 테스트 작성
+  - [x] 출력 형식 검증
 
 ### LangGraph 워크플로우 그래프 구성
-- [ ] `backend/app/core/workflow/graph.py` 작성
-  - [ ] StateGraph(ChatState) 생성
-  - [ ] 6개 노드 추가 (query_analyzer, rag_searcher, relevance_checker, rag_responder, llm_fallback, response_formatter)
-  - [ ] 엣지 연결
-    - [ ] entry_point → query_analyzer
-    - [ ] query_analyzer → rag_searcher
-    - [ ] rag_searcher → relevance_checker
-    - [ ] relevance_checker → (조건부) rag_responder or llm_fallback
-    - [ ] rag_responder → response_formatter
-    - [ ] llm_fallback → response_formatter
-    - [ ] response_formatter → END
-  - [ ] 워크플로우 컴파일 (`app = workflow.compile()`)
-  - [ ] `run_workflow(user_query)` 함수 작성
+- [x] `backend/app/core/workflow/graph.py` 작성
+  - [x] StateGraph(ChatState) 생성
+  - [x] 6개 노드 추가 (query_analyzer, rag_searcher, relevance_checker, rag_responder, llm_fallback, response_formatter)
+  - [x] 엣지 연결
+    - [x] entry_point → query_analyzer
+    - [x] query_analyzer → rag_searcher
+    - [x] rag_searcher → relevance_checker
+    - [x] relevance_checker → (조건부) rag_responder or llm_fallback
+    - [x] rag_responder → response_formatter
+    - [x] llm_fallback → response_formatter
+    - [x] response_formatter → END
+  - [x] 워크플로우 컴파일 (`app = workflow.compile()`)
+  - [x] `run_workflow(user_query)` 함수 작성
 
 ### End-to-End 테스트
-- [ ] `backend/scripts/test_workflow.py` 작성
-  - [ ] 10개 샘플 쿼리 준비
-    - [ ] 5개: RAG에서 답변 가능한 질문
-    - [ ] 5개: 일반 지식 질문
-  - [ ] 각 쿼리에 대해 워크플로우 실행
-  - [ ] 응답 타입 (rag/llm_fallback) 확인
-  - [ ] 답변 품질 수동 검증
-- [ ] 스크립트 실행 및 결과 분석
+- [x] `backend/scripts/test_workflow.py` 작성
+  - [x] 10개 샘플 쿼리 준비
+    - [x] 5개: RAG에서 답변 가능한 질문
+    - [x] 5개: 일반 지식 질문
+  - [x] 각 쿼리에 대해 워크플로우 실행
+  - [x] 응답 타입 (rag/llm_fallback) 확인
+  - [x] 답변 품질 수동 검증
+- [x] 스크립트 실행 및 결과 분석
 
 ### 워크플로우 시각화
-- [ ] LangGraph 그래프 시각화 코드 작성
-  - [ ] `app.get_graph().draw_png()` 또는 Mermaid
-  - [ ] 이미지 파일 저장 (`docs/workflow_diagram.png`)
+- [x] LangGraph 그래프 시각화 코드 작성
+  - [x] `app.get_graph().draw_mermaid_png()` 사용
+  - [x] 이미지 파일 저장 (`docs/workflow_diagram.png`)
+  - [x] Mermaid 마크다운 문서 (`docs/workflow_diagram.md`)
 
 ### Week 3 마무리
-- [ ] 코드 리뷰 및 리팩토링
-- [ ] 유닛 테스트 작성 (각 에이전트)
-- [ ] 통합 테스트 작성 (전체 워크플로우)
-- [ ] Git 커밋 (`Week 3 완료: LangGraph 워크플로우`)
+- [x] 코드 리뷰 및 리팩토링
+- [x] 유닛 테스트 작성 (각 에이전트) - test_workflow.py에 통합
+- [x] 통합 테스트 작성 (전체 워크플로우) - test_workflow.py
+- [x] Git 커밋 (`Week 3 완료: LangGraph 워크플로우`)
 
 ---
 
