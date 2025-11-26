@@ -13,7 +13,7 @@
   - [x] `app/`, `batch/`, `tests/`, `scripts/` 디렉토리
   - [x] `app/` 하위: `models/`, `schemas/`, `api/`, `core/`, `utils/`
   - [x] `core/` 하위: `agents/`, `workflow/`, `services/`
-- [ ] `frontend/` 디렉토리 구조 생성 (나중에 진행)
+- [x] `frontend/` 디렉토리 구조 생성 (Week 6에서 완료)
 - [x] Git 저장소 초기화 (`git init`)
 - [x] `.gitignore` 파일 작성
 
@@ -634,80 +634,90 @@
 ## 📋 Week 6: 프론트엔드 개발 - Landing Page & Chat (React)
 
 ### React 프로젝트 생성
-- [ ] `frontend/` 디렉토리로 이동
-- [ ] Vite로 React 프로젝트 생성
-  - [ ] `npm create vite@latest . -- --template react-ts`
-- [ ] 의존성 설치
-  - [ ] `npm install`
-  - [ ] `npm install axios react-query zustand`
-  - [ ] `npm install -D tailwindcss postcss autoprefixer`
-  - [ ] `npm install react-router-dom react-markdown`
-  - [ ] `npm install lucide-react` (아이콘)
+- [x] `frontend/` 디렉토리로 이동
+- [x] Vite로 React 프로젝트 생성
+  - [x] `npm create vite@latest . -- --template react-ts`
+  - [x] React 19, TypeScript 5.8, Vite 7.2
+- [x] 의존성 설치
+  - [x] `npm install`
+  - [x] `npm install axios @tanstack/react-query zustand`
+  - [x] `npm install -D tailwindcss postcss autoprefixer @tailwindcss/postcss`
+  - [x] `npm install react-router-dom react-markdown`
+  - [x] `npm install lucide-react` (아이콘)
+  - [x] `npm install tw-animate-css tailwindcss-animate`
 
 ### Tailwind CSS 설정
-- [ ] `npx tailwindcss init -p`
-- [ ] `tailwind.config.js` 설정
-  - [ ] content 경로 추가 (`./src/**/*.{js,ts,jsx,tsx}`)
-  - [ ] 다크 테마 색상 설정 (UI 디자인 참고)
-- [ ] `src/index.css`에 Tailwind directives 추가
-- [ ] Tailwind 동작 확인
+- [x] Tailwind CSS v4 설정 (PostCSS 플러그인 분리)
+- [x] `tailwind.config.js` 설정
+  - [x] content 경로 추가 (`./src/**/*.{js,ts,jsx,tsx}`)
+  - [x] 다크 테마 색상 설정 (shadcn/ui 호환 CSS 변수)
+- [x] `postcss.config.js` 설정 (`@tailwindcss/postcss` 사용)
+- [x] `src/index.css`에 Tailwind directives 추가
+- [x] Tailwind 동작 확인 (`npm run build` 성공)
 
 ### shadcn/ui 설치
-- [ ] `npx shadcn-ui@latest init`
-- [ ] 필요한 컴포넌트 설치
-  - [ ] `npx shadcn-ui@latest add button`
-  - [ ] `npx shadcn-ui@latest add input`
-  - [ ] `npx shadcn-ui@latest add card`
-  - [ ] `npx shadcn-ui@latest add tabs`
-  - [ ] `npx shadcn-ui@latest add toggle`
+- [x] `npx shadcn@latest init --base-color neutral --defaults`
+- [x] 필요한 컴포넌트 설치
+  - [x] `npx shadcn@latest add button`
+  - [x] `npx shadcn@latest add input`
+  - [x] `npx shadcn@latest add card`
+  - [x] `npx shadcn@latest add scroll-area`
+  - [x] `npx shadcn@latest add avatar`
+  - [x] `npx shadcn@latest add textarea`
 
 ### 프로젝트 구조 생성
-- [ ] `src/` 하위 디렉토리 생성
-  - [ ] `components/layout/` - 레이아웃 컴포넌트
-  - [ ] `components/landing/` - Landing Page 컴포넌트
-  - [ ] `components/chat/` - Chat 컴포넌트
-  - [ ] `components/dashboard/` - Dashboard 컴포넌트
-  - [ ] `components/settings/` - Settings 컴포넌트
-  - [ ] `hooks/`, `services/`, `stores/`, `pages/`, `types/`
+- [x] `src/` 하위 디렉토리 생성
+  - [x] `components/layout/` - 레이아웃 컴포넌트 (Header.tsx, Layout.tsx)
+  - [x] `components/landing/` - Landing Page 컴포넌트 (LandingPage.tsx)
+  - [x] `components/chat/` - Chat 컴포넌트 (ChatContainer.tsx, ChatInput.tsx, ChatMessage.tsx)
+  - [ ] `components/dashboard/` - Dashboard 컴포넌트 (Week 7)
+  - [ ] `components/settings/` - Settings 컴포넌트 (Week 7)
+  - [x] `hooks/`, `services/`, `store/`, `types/`
 
 ### TypeScript 타입 정의
-- [ ] `src/types/chat.ts` 작성
-  - [ ] `Message` 인터페이스 (id, role, content, sources, timestamp)
-  - [ ] `Source` 인터페이스 (title, url, author, updated_at, source_type)
-  - [ ] `ChatSession` 인터페이스 (id, title, created_at)
-  - [ ] `ChatResponse` 인터페이스
-- [ ] `src/types/sync.ts` 작성
+- [x] `src/types/index.ts` 작성
+  - [x] `ChatMessage` 인터페이스 (id, role, content, sources, timestamp)
+  - [x] `Source` 인터페이스 (doc_id, doc_type, title, url, score)
+  - [x] `ChatSession` 인터페이스 (id, messages, createdAt, updatedAt)
+  - [x] `ChatRequest`, `ChatResponse` 인터페이스
+  - [x] `StatsResponse`, `SearchResponse` 인터페이스
+- [ ] `src/types/sync.ts` 작성 (Week 7)
   - [ ] `DataSource` 인터페이스 (type, status, docs_count, last_sync)
   - [ ] `SyncActivity` 인터페이스 (timestamp, event_type, status, description)
   - [ ] `SyncStats` 인터페이스
 
 ### Axios API 클라이언트
-- [ ] `src/services/api.ts` 작성
-  - [ ] axios 인스턴스 생성
-  - [ ] baseURL: `import.meta.env.VITE_API_BASE_URL`
-  - [ ] `sendMessage(query, sessionId)` 함수
-  - [ ] `submitFeedback(chatId, rating, comment)` 함수
-  - [ ] `fetchStats()` 함수
-  - [ ] `fetchSyncHistory()` 함수
-  - [ ] `testConnection(source, config)` 함수
-  - [ ] `triggerSync(source)` 함수
-  - [ ] `updateSettings(source, settings)` 함수
+- [x] `src/services/api.ts` 작성
+  - [x] axios 인스턴스 생성
+  - [x] baseURL: `import.meta.env.VITE_API_URL`
+  - [x] `sendMessage(request: ChatRequest)` 함수
+  - [x] `search(query, limit)` 함수
+  - [x] `getStats()` 함수
+  - [x] `healthCheck()` 함수
+  - [ ] `submitFeedback(chatId, rating, comment)` 함수 (Week 7)
+  - [ ] `fetchSyncHistory()` 함수 (Week 7)
+  - [ ] `testConnection(source, config)` 함수 (Week 7)
+  - [ ] `triggerSync(source)` 함수 (Week 7)
+  - [ ] `updateSettings(source, settings)` 함수 (Week 7)
 
 ### Zustand 상태 관리
-- [ ] `src/stores/chatStore.ts` 작성
-  - [ ] State: messages, sessionId, chatHistory, isLoading
-  - [ ] Actions: addMessage, setLoading, clearMessages, loadChatHistory
-- [ ] `src/stores/settingsStore.ts` 작성
+- [x] `src/store/chatStore.ts` 작성
+  - [x] State: currentSession, sessions, isLoading, error
+  - [x] Actions: createSession, addMessage, setLoading, setError, clearCurrentSession, switchSession, deleteSession
+  - [x] persist 미들웨어로 localStorage 저장
+- [ ] `src/stores/settingsStore.ts` 작성 (Week 7)
   - [ ] State: jiraConfig, confluenceConfig, syncSettings
   - [ ] Actions: updateJiraConfig, updateConfluenceConfig, updateSyncSettings
 
 ### React Query 설정
-- [ ] `src/main.tsx`에 QueryClientProvider 추가
-- [ ] `src/hooks/useChat.ts` 작성
+- [x] `src/main.tsx`에 QueryClientProvider 추가
+- [x] QueryClient 기본 설정 (staleTime, retry)
+- [x] 다크 모드 기본 활성화
+- [ ] `src/hooks/useChat.ts` 작성 (Week 7 - 고급 기능)
   - [ ] `useMutation`으로 sendMessage 호출
-- [ ] `src/hooks/useFeedback.ts` 작성
+- [ ] `src/hooks/useFeedback.ts` 작성 (Week 7)
   - [ ] `useMutation`으로 submitFeedback 호출
-- [ ] `src/hooks/useSync.ts` 작성
+- [ ] `src/hooks/useSync.ts` 작성 (Week 7)
   - [ ] `useQuery`로 동기화 상태 조회
   - [ ] `useMutation`으로 동기화 트리거
 
@@ -716,154 +726,110 @@
 ### Landing Page 구현 (`/`)
 
 #### Layout 컴포넌트
-- [ ] `src/components/layout/MainLayout.tsx` 작성
-  - [ ] Header (로고, 네비게이션: Features, How It Works, Pricing, Docs)
-  - [ ] "Get Started" 버튼
-  - [ ] Footer (저작권, 링크)
+- [x] `src/components/layout/Layout.tsx` 작성 (간소화된 버전)
+  - [x] Header 컴포넌트 (로고, 테마 토글)
+  - [x] 메인 콘텐츠 영역
+- [x] `src/components/layout/Header.tsx` 작성
+  - [x] 로고 (MessageSquare 아이콘 + "Knowledge Base AI")
+  - [x] 다크/라이트 모드 토글 버튼
 
-#### HeroSection 컴포넌트
-- [ ] `src/components/landing/HeroSection.tsx` 작성
-  - [ ] 타이틀: "Unlock Your Team's Knowledge Instantly"
-  - [ ] 설명 텍스트
-  - [ ] "Connect Your Workspace" CTA 버튼
-  - [ ] 우측 이미지/그래픽
-  - [ ] 다크 테마 배경
+#### LandingPage 컴포넌트 (통합)
+- [x] `src/components/landing/LandingPage.tsx` 작성
+  - [x] Hero 섹션
+    - [x] 타이틀: "Knowledge Base AI Assistant"
+    - [x] 설명 텍스트: Jira/Confluence 문서 검색 안내
+    - [x] "Start Chatting" CTA 버튼
+  - [x] Features 섹션
+    - [x] 4개 FeatureCard 통합:
+      - [x] AI-Powered Chat (MessageSquare 아이콘)
+      - [x] Smart Search (Search 아이콘)
+      - [x] Jira & Confluence (Database 아이콘)
+      - [x] Source Citations (Sparkles 아이콘)
+    - [x] Card 컴포넌트로 스타일링
+  - [x] 다크 테마 배경
 
-#### FeatureCard 컴포넌트
-- [ ] `src/components/landing/FeatureCard.tsx` 작성
-  - [ ] Props: icon, title, description
-  - [ ] 아이콘, 제목, 설명 표시
-  - [ ] 다크 카드 스타일
-
-#### FeaturesSection 컴포넌트
-- [ ] `src/components/landing/FeaturesSection.tsx` 작성
-  - [ ] "Integrates with your favorite tools" 섹션
-  - [ ] "Powerful Features, Seamlessly Integrated" 타이틀
-  - [ ] 5개 FeatureCard 렌더링:
-    - [ ] Jira & Confluence Integration
-    - [ ] Real-time Incremental Sync
-    - [ ] Smart Deletion Detection
-    - [ ] Secure PAT Authentication
-    - [ ] Cloud & Server Compatible
-
-#### HowItWorks 컴포넌트
+#### 추후 개선 (Optional)
+- [ ] `src/components/landing/HeroSection.tsx` 분리
+- [ ] `src/components/landing/FeatureCard.tsx` 분리
+- [ ] `src/components/landing/FeaturesSection.tsx` 분리
 - [ ] `src/components/landing/HowItWorks.tsx` 작성
-  - [ ] "How It Works" 타이틀
-  - [ ] 3단계 설명:
-    - [ ] 1. Connect & Authenticate
-    - [ ] 2. Intelligent Syncing
-    - [ ] 3. Ask Anything
-  - [ ] 아이콘 + 텍스트 레이아웃
-
-#### CTASection 컴포넌트
 - [ ] `src/components/landing/CTASection.tsx` 작성
-  - [ ] "Ready to Supercharge Your Team's Productivity?"
-  - [ ] 설명 텍스트
-  - [ ] "Try KnowledgeBot AI Free" 버튼
-  - [ ] 배경 그라데이션
-
-#### LandingPage 페이지
-- [ ] `src/pages/LandingPage.tsx` 작성
-  - [ ] MainLayout 래핑
-  - [ ] HeroSection, FeaturesSection, HowItWorks, CTASection 조합
+- [ ] Footer 컴포넌트 추가
 
 ---
 
 ### Chat Page 구현 (`/chat`)
 
-#### ChatLayout 컴포넌트
-- [ ] `src/components/layout/ChatLayout.tsx` 작성
-  - [ ] 좌측 사이드바 + 메인 컨텐츠 영역 레이아웃
-  - [ ] 다크 테마 배경
+#### ChatContainer 컴포넌트 (통합)
+- [x] `src/components/chat/ChatContainer.tsx` 작성
+  - [x] 채팅 헤더 (뒤로가기 버튼, 제목, 삭제 버튼)
+  - [x] ScrollArea로 메시지 영역
+  - [x] 빈 상태 안내 메시지
+  - [x] ChatMessage 컴포넌트 렌더링
+  - [x] ChatInput 컴포넌트
+  - [x] Zustand 상태 연동
+  - [x] API 호출 및 에러 처리
+  - [x] 자동 스크롤
 
-#### ChatSidebar 컴포넌트
-- [ ] `src/components/chat/ChatSidebar.tsx` 작성
-  - [ ] 로고/제목 ("Knowledge AI")
-  - [ ] "New Chat" 버튼 (파란색)
-  - [ ] 검색 입력 필드 ("Search history...")
-  - [ ] 채팅 기록 목록
-  - [ ] 하단: Settings, Help & FAQ 링크
-
-#### ChatHistory 컴포넌트
-- [ ] `src/components/chat/ChatHistory.tsx` 작성
-  - [ ] 채팅 세션 목록 렌더링
-  - [ ] 각 항목: 아이콘 + 제목 (말줄임)
-  - [ ] 활성 채팅 하이라이트
-  - [ ] 클릭 시 채팅 전환
-
-#### MessageItem 컴포넌트
-- [ ] `src/components/chat/MessageItem.tsx` 작성
-  - [ ] Props: message, isUser
-  - [ ] AI 메시지: 좌측 정렬, 아바타, 다크 배경
-  - [ ] 사용자 메시지: 우측 정렬, 파란색 배경
-  - [ ] react-markdown으로 AI 답변 렌더링
-
-#### SourceCard 컴포넌트
-- [ ] `src/components/chat/SourceCard.tsx` 작성
-  - [ ] Props: source (title, url, source_type)
-  - [ ] Jira 이슈: 체크 아이콘, 이슈 키 표시
-  - [ ] Confluence 페이지: 문서 아이콘, 페이지 제목 표시
-  - [ ] 클릭 시 URL 링크
-
-#### FeedbackButtons 컴포넌트
-- [ ] `src/components/chat/FeedbackButtons.tsx` 작성
-  - [ ] 👍/👎 버튼
-  - [ ] 클릭 시 API 호출
-  - [ ] 제출 후 상태 표시
-
-#### MessageList 컴포넌트
-- [ ] `src/components/chat/MessageList.tsx` 작성
-  - [ ] messages.map()으로 MessageItem 렌더링
-  - [ ] AI 메시지에 SourceCard 목록 포함
-  - [ ] AI 메시지에 FeedbackButtons 포함
-  - [ ] 자동 스크롤
+#### ChatMessage 컴포넌트
+- [x] `src/components/chat/ChatMessage.tsx` 작성
+  - [x] Props: message (ChatMessage 타입)
+  - [x] AI 메시지: 좌측 정렬, Bot 아바타, muted 배경
+  - [x] 사용자 메시지: 우측 정렬, User 아바타, primary 배경
+  - [x] react-markdown으로 AI 답변 렌더링
+  - [x] 출처 링크 표시 (doc_type, title, ExternalLink 아이콘)
+  - [x] 타임스탬프 표시
 
 #### ChatInput 컴포넌트
-- [ ] `src/components/chat/ChatInput.tsx` 작성
-  - [ ] 입력 필드 ("Ask anything...")
-  - [ ] 전송 버튼 (파란색 화살표)
-  - [ ] Enter 키 전송 지원
-  - [ ] 로딩 상태 표시
+- [x] `src/components/chat/ChatInput.tsx` 작성
+  - [x] Textarea 입력 필드 ("Ask a question...")
+  - [x] 전송 버튼 (Send 아이콘)
+  - [x] Enter 키 전송 지원 (Shift+Enter는 줄바꿈)
+  - [x] 로딩 상태 표시 (Loader2 애니메이션)
+  - [x] disabled 상태 지원
 
-#### ChatInterface 컴포넌트
-- [ ] `src/components/chat/ChatInterface.tsx` 작성
-  - [ ] 채팅 제목 헤더
-  - [ ] 공유/삭제 버튼
-  - [ ] MessageList 컴포넌트
-  - [ ] ChatInput 컴포넌트
-
-#### ChatPage 페이지
-- [ ] `src/pages/ChatPage.tsx` 작성
-  - [ ] ChatLayout 래핑
-  - [ ] ChatSidebar + ChatInterface 조합
+#### 추후 개선 (Optional)
+- [ ] `src/components/chat/ChatSidebar.tsx` 작성 (채팅 기록 목록)
+- [ ] `src/components/chat/ChatHistory.tsx` 작성 (세션 목록)
+- [ ] `src/components/chat/SourceCard.tsx` 분리
+- [ ] `src/components/chat/FeedbackButtons.tsx` 작성 (👍/👎 버튼)
 
 ---
 
 ### 환경 변수 설정
-- [ ] `frontend/.env` 파일 생성
-  - [ ] `VITE_API_BASE_URL=http://localhost:8000`
+- [x] `frontend/.env.example` 파일 생성
+  - [x] `VITE_API_URL=http://localhost:8000`
+- [ ] `frontend/.env` 파일 생성 (실제 값 입력)
 
-### 라우팅 설정
-- [ ] `src/App.tsx` 작성
-  - [ ] React Router 설정
+### 라우팅 설정 (간소화)
+- [x] `src/App.tsx` 작성
+  - [x] useState로 뷰 전환 관리 (landing/chat)
+  - [x] Landing → Chat 전환 (`onStartChat`)
+  - [x] Chat → Landing 전환 (`onBack`)
+- [ ] React Router 설정 (추후 개선)
   - [ ] `/` → LandingPage
   - [ ] `/chat` → ChatPage
   - [ ] `/dashboard` → DashboardPage (Week 7)
   - [ ] `/settings` → SettingsPage (Week 7)
 
 ### 로컬 개발 서버 실행
-- [ ] `npm run dev`
-- [ ] `http://localhost:5173` 접속
+- [x] `npm run dev` 실행 확인
+- [x] `http://localhost:5173` 접속 가능
+- [x] `npm run build` 빌드 성공 (dist/ 생성)
 - [ ] Landing Page 동작 확인
   - [ ] 모든 섹션 표시
-  - [ ] "Get Started" 버튼 → `/chat` 이동
+  - [ ] "Start Chatting" 버튼 → Chat 화면 이동
 - [ ] Chat Page 동작 확인
-  - [ ] 사이드바 채팅 목록
-  - [ ] 메시지 전송/응답
+  - [ ] 메시지 전송/응답 (백엔드 연동)
   - [ ] 출처 카드 표시
-  - [ ] 피드백 버튼
+  - [ ] 에러 처리
 
 ### Week 6 마무리
+- [x] 기본 프로젝트 구조 완성
+- [x] 핵심 컴포넌트 구현 (Layout, Landing, Chat)
+- [x] 상태 관리 설정 (Zustand, React Query)
+- [x] API 클라이언트 설정 (axios)
+- [ ] 백엔드 연동 테스트
 - [ ] 코드 리뷰 및 리팩토링
 - [ ] 컴포넌트 테스트 작성 (Vitest, optional)
 - [ ] 반응형 디자인 확인 (모바일, 태블릿)
