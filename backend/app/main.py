@@ -12,7 +12,14 @@ from app.config import settings
 from app.utils.exceptions import KnowledgeBaseException
 from app.core.services.vector_db_service import VectorDBService
 from app.state import get_vector_db_service, set_vector_db_service
-from app.api import chat_router, feedback_router, health_router, stats_router
+from app.api import (
+    chat_router,
+    dashboard_router,
+    feedback_router,
+    health_router,
+    settings_router,
+    stats_router,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -84,8 +91,10 @@ app.add_middleware(
 
 # Register API routers
 app.include_router(chat_router, prefix="/api")
+app.include_router(dashboard_router, prefix="/api")
 app.include_router(feedback_router, prefix="/api")
 app.include_router(health_router, prefix="/api")
+app.include_router(settings_router, prefix="/api")
 app.include_router(stats_router, prefix="/api")
 
 

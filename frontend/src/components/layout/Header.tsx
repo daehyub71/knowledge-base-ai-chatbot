@@ -1,8 +1,12 @@
-import { MessageSquare, Moon, Sun } from 'lucide-react';
+import { MessageSquare, Moon, Sun, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 
-export function Header() {
+interface HeaderProps {
+  onDashboardClick?: () => void;
+}
+
+export function Header({ onDashboardClick }: HeaderProps) {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
@@ -25,6 +29,17 @@ export function Header() {
         </div>
 
         <div className="flex flex-1 items-center justify-end space-x-2">
+          {onDashboardClick && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onDashboardClick}
+              aria-label="Dashboard"
+            >
+              <LayoutDashboard className="h-4 w-4 mr-2" />
+              Dashboard
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="icon"
