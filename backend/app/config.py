@@ -65,8 +65,25 @@ class Settings(BaseSettings):
     debug: bool = True
     log_level: str = "INFO"
 
+    # CORS
+    cors_origins: list[str] = [
+        "http://localhost:3000",
+        "http://localhost:8501",
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:8501",
+    ]
+
+    @property
+    def CORS_ORIGINS(self) -> list[str]:
+        """Get CORS origins (uppercase alias for compatibility)."""
+        return self.cors_origins
+
 
 @lru_cache
 def get_settings() -> Settings:
     """Get cached settings instance."""
     return Settings()
+
+
+# Module-level settings instance for convenience
+settings = get_settings()

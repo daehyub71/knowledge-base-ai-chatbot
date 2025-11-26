@@ -399,109 +399,121 @@
 ## 📋 Week 4: API 엔드포인트 구현
 
 ### FastAPI 앱 초기화
-- [ ] `backend/app/main.py` 작성
-  - [ ] FastAPI() 인스턴스 생성
-  - [ ] CORS 설정 (CORSMiddleware)
-  - [ ] 라우터 등록 준비
-  - [ ] 시작/종료 이벤트 핸들러
-    - [ ] startup: FAISS 인덱스 로드
-    - [ ] shutdown: DB 연결 종료
+- [x] `backend/app/main.py` 작성
+  - [x] FastAPI() 인스턴스 생성
+  - [x] CORS 설정 (CORSMiddleware)
+  - [x] 라우터 등록 준비
+  - [x] 시작/종료 이벤트 핸들러
+    - [x] startup: FAISS 인덱스 로드
+    - [x] shutdown: DB 연결 종료
 
 ### Pydantic 스키마 정의
-- [ ] `backend/app/schemas/chat.py` 작성
-  - [ ] `ChatRequest` (query, session_id)
-  - [ ] `Source` (title, url, author, updated_at)
-  - [ ] `ChatResponse` (response, response_type, sources, relevance_score, chat_id)
-- [ ] `backend/app/schemas/feedback.py` 작성
-  - [ ] `FeedbackRequest` (chat_id, rating, comment)
-  - [ ] `FeedbackResponse` (success, message)
-- [ ] `backend/app/schemas/stats.py` 작성
-  - [ ] `StatsResponse` (total_documents, total_chunks, jira_issues, confluence_pages, last_sync, chat_count_today, rag_response_rate, avg_feedback_rating)
+- [x] `backend/app/schemas/chat.py` 작성
+  - [x] `ChatRequest` (query, session_id)
+  - [x] `Source` (doc_id, doc_type, title, url, score, snippet)
+  - [x] `ChatResponse` (response, response_type, sources, relevance_decision, analyzed_query, session_id, error)
+- [x] `backend/app/schemas/feedback.py` 작성
+  - [x] `FeedbackRequest` (session_id, message_id, rating, comment, feedback_type)
+  - [x] `FeedbackResponse` (success, feedback_id, message, created_at)
+- [x] `backend/app/schemas/stats.py` 작성
+  - [x] `DocumentStats` (total_documents, jira_documents, confluence_documents, active_documents, deleted_documents, total_chunks, vector_count)
+  - [x] `SyncStats` (last_sync_at, last_sync_status, documents_added, documents_updated, documents_deleted)
+  - [x] `ChatStats` (total_sessions, total_messages, rag_responses, fallback_responses, positive_feedback, negative_feedback)
+  - [x] `StatsResponse` (documents, sync, chat, status, updated_at)
 
 ### API 엔드포인트 1: POST /api/chat
-- [ ] `backend/app/api/chat.py` 작성
-  - [ ] `@app.post("/api/chat")` 엔드포인트
-  - [ ] ChatRequest 받기
-  - [ ] 워크플로우 실행 (`run_workflow(query)`)
-  - [ ] ChatHistory 테이블에 저장
-    - [ ] session_id, user_query, response, response_type, source_documents, relevance_score
-  - [ ] ChatResponse 반환
-- [ ] 단위 테스트 작성
-  - [ ] pytest로 API 호출 테스트
-  - [ ] 응답 형식 검증
+- [x] `backend/app/api/chat.py` 작성
+  - [x] `@app.post("/api/chat")` 엔드포인트
+  - [x] ChatRequest 받기
+  - [x] 워크플로우 실행 (`run_workflow(query)`)
+  - [x] ChatHistory 테이블에 저장
+    - [x] session_id, user_query, response, response_type, source_documents, relevance_score
+  - [x] ChatResponse 반환
+- [x] 단위 테스트 작성
+  - [x] pytest로 API 호출 테스트
+  - [x] 응답 형식 검증
 
 ### API 엔드포인트 2: POST /api/feedback
-- [ ] `backend/app/api/feedback.py` 작성
-  - [ ] `@app.post("/api/feedback")` 엔드포인트
-  - [ ] FeedbackRequest 받기
-  - [ ] Feedback 테이블에 저장
-    - [ ] chat_history_id, rating, comment
-  - [ ] FeedbackResponse 반환
-- [ ] 단위 테스트 작성
+- [x] `backend/app/api/feedback.py` 작성
+  - [x] `@app.post("/api/feedback")` 엔드포인트
+  - [x] FeedbackRequest 받기
+  - [x] Feedback 테이블에 저장
+    - [x] chat_history_id, rating, comment
+  - [x] FeedbackResponse 반환
+- [x] 단위 테스트 작성
 
 ### API 엔드포인트 3: GET /api/health
-- [ ] `backend/app/api/health.py` 작성
-  - [ ] `@app.get("/api/health")` 엔드포인트
-  - [ ] 데이터베이스 연결 확인 (simple query)
-  - [ ] FAISS 인덱스 로드 상태 확인
-  - [ ] sync_history에서 마지막 동기화 시간 조회
-  - [ ] HealthResponse 반환
-- [ ] 단위 테스트 작성
+- [x] `backend/app/api/health.py` 작성
+  - [x] `@app.get("/api/health")` 엔드포인트
+  - [x] 데이터베이스 연결 확인 (simple query)
+  - [x] FAISS 인덱스 로드 상태 확인
+  - [x] sync_history에서 마지막 동기화 시간 조회
+  - [x] HealthResponse 반환
+- [x] 단위 테스트 작성
 
 ### API 엔드포인트 4: GET /api/stats
-- [ ] `backend/app/api/stats.py` 작성
-  - [ ] `@app.get("/api/stats")` 엔드포인트
-  - [ ] PostgreSQL에서 통계 집계
-    - [ ] `SELECT COUNT(*) FROM documents`
-    - [ ] `SELECT COUNT(*) FROM document_chunks`
-    - [ ] Jira 문서 수, Confluence 문서 수
-    - [ ] 오늘 채팅 수 (`created_at >= today`)
-    - [ ] RAG 응답 비율 (`response_type='rag'`)
-    - [ ] 평균 피드백 (`AVG(rating)`)
-  - [ ] StatsResponse 반환
-- [ ] 단위 테스트 작성
+- [x] `backend/app/api/stats.py` 작성
+  - [x] `@app.get("/api/stats")` 엔드포인트
+  - [x] PostgreSQL에서 통계 집계
+    - [x] `SELECT COUNT(*) FROM documents`
+    - [x] `SELECT COUNT(*) FROM document_chunks`
+    - [x] Jira 문서 수, Confluence 문서 수
+    - [x] 오늘 채팅 수 (`created_at >= today`)
+    - [x] RAG 응답 비율 (`response_type='rag'`)
+    - [x] 평균 피드백 (`AVG(rating)`)
+  - [x] StatsResponse 반환
+- [x] 단위 테스트 작성
 
 ### 라우터 등록
-- [ ] `backend/app/main.py`에 라우터 등록
-  - [ ] `app.include_router(chat_router, prefix="/api")`
-  - [ ] `app.include_router(feedback_router, prefix="/api")`
-  - [ ] `app.include_router(health_router, prefix="/api")`
-  - [ ] `app.include_router(stats_router, prefix="/api")`
+- [x] `backend/app/main.py`에 라우터 등록
+  - [x] `app.include_router(chat_router, prefix="/api")`
+  - [x] `app.include_router(feedback_router, prefix="/api")`
+  - [x] `app.include_router(health_router, prefix="/api")`
+  - [x] `app.include_router(stats_router, prefix="/api")`
+- [x] `backend/app/state.py` 작성 (순환 참조 해결용)
+  - [x] VectorDBService 전역 상태 관리
+  - [x] get_vector_db_service(), set_vector_db_service() 함수
 
 ### 에러 핸들링
-- [ ] `backend/app/utils/exceptions.py` 작성
-  - [ ] 커스텀 예외 클래스 (DocumentNotFoundError, etc.)
-- [ ] `backend/app/main.py`에 예외 핸들러 등록
-  - [ ] `@app.exception_handler(Exception)`
-  - [ ] JSON 형식 에러 응답
+- [x] `backend/app/utils/exceptions.py` 작성
+  - [x] 커스텀 예외 클래스 (KnowledgeBaseException, DocumentNotFoundError, ChatHistoryNotFoundError, etc.)
+- [x] `backend/app/main.py`에 예외 핸들러 등록
+  - [x] `@app.exception_handler(KnowledgeBaseException)`
+  - [x] `@app.exception_handler(Exception)`
+  - [x] JSON 형식 에러 응답
 
 ### 로깅 설정
-- [ ] `backend/app/utils/logger.py` 작성
-  - [ ] Python logging 설정
-  - [ ] 파일 핸들러 (logs/app.log)
-  - [ ] 콘솔 핸들러
-  - [ ] 로그 레벨 (INFO)
-- [ ] 각 엔드포인트에 로깅 추가
-  - [ ] 요청 로깅
-  - [ ] 에러 로깅
+- [x] `backend/app/utils/logger.py` 작성
+  - [x] Python logging 설정
+  - [x] 파일 핸들러 (logs/app.log) - RotatingFileHandler
+  - [x] 콘솔 핸들러
+  - [x] 로그 레벨 (INFO)
+- [x] 각 엔드포인트에 로깅 추가
+  - [x] 요청 로깅
+  - [x] 에러 로깅
 
 ### Swagger 문서 작성
-- [ ] 각 엔드포인트에 docstring 추가
-  - [ ] 설명, 파라미터, 응답 예시
-- [ ] FastAPI 자동 생성 문서 확인
-  - [ ] `http://localhost:8000/docs`
+- [x] 각 엔드포인트에 docstring 추가
+  - [x] 설명, 파라미터, 응답 예시
+- [x] FastAPI 자동 생성 문서 확인
+  - [x] `http://localhost:8001/docs`
 
 ### 로컬 서버 실행 테스트
-- [ ] `uvicorn app.main:app --reload --port 8000` 실행
-- [ ] Swagger UI에서 각 엔드포인트 테스트
-  - [ ] POST /api/chat (샘플 쿼리)
-  - [ ] POST /api/feedback
-  - [ ] GET /api/health
-  - [ ] GET /api/stats
+- [x] `uvicorn app.main:app --reload --port 8001` 실행
+- [x] Swagger UI에서 각 엔드포인트 테스트
+  - [x] POST /api/chat (샘플 쿼리)
+  - [x] POST /api/feedback
+  - [x] GET /api/health
+  - [x] GET /api/stats
 
 ### Week 4 마무리
-- [ ] 코드 리뷰 및 리팩토링
-- [ ] API 통합 테스트 작성 (pytest)
+- [x] 코드 리뷰 및 리팩토링
+- [x] API 통합 테스트 작성 (pytest) - 18개 테스트 통과
+  - [x] `backend/tests/conftest.py` - 테스트 픽스처 및 SQLite 호환 모델
+  - [x] `backend/tests/api/test_chat.py` - 채팅 API 테스트 (6개)
+  - [x] `backend/tests/api/test_feedback.py` - 피드백 API 테스트 (5개)
+  - [x] `backend/tests/api/test_health.py` - 헬스체크 API 테스트 (3개)
+  - [x] `backend/tests/api/test_stats.py` - 통계 API 테스트 (4개)
 - [ ] Postman 컬렉션 생성 (optional)
 - [ ] Git 커밋 (`Week 4 완료: API 엔드포인트`)
 
@@ -510,99 +522,112 @@
 ## 📋 Week 5: 배치 프로세스 구현
 
 ### 배치 프로젝트 구조 생성
-- [ ] `backend/batch/` 디렉토리 확인
-- [ ] `backend/batch/__init__.py` 생성
+- [x] `backend/batch/` 디렉토리 확인
+- [x] `backend/batch/__init__.py` 생성
 
 ### 배치 메인 로직
-- [ ] `backend/batch/main.py` 작성
-  - [ ] argparse로 `--source jira/confluence/all` 옵션
-  - [ ] `run_batch()` 메인 함수
-  - [ ] SyncHistory 테이블에 시작 기록 (status='running')
-  - [ ] 예외 처리 및 에러 로깅
-  - [ ] 완료 시 SyncHistory 업데이트 (status='success')
+- [x] `backend/batch/main.py` 작성
+  - [x] argparse로 `--source jira/confluence/all` 옵션
+  - [x] `run_batch()` 메인 함수
+  - [x] SyncHistory 테이블에 시작 기록 (status='running')
+  - [x] 예외 처리 및 에러 로깅
+  - [x] 완료 시 SyncHistory 업데이트 (status='success')
+  - [x] `--dry-run` 옵션 지원
+  - [x] `--verbose` 옵션 지원
 
 ### Jira 증분 동기화
-- [ ] `backend/batch/sync_jira.py` 작성
-  - [ ] `sync_jira_incremental()` 함수
-  - [ ] sync_history에서 마지막 성공 시간 조회
-  - [ ] JiraClient로 증분 업데이트 조회 (`updated > last_sync`)
-  - [ ] PostgreSQL에 업데이트
-    - [ ] 신규 문서: INSERT
-    - [ ] 기존 문서: UPDATE (title, content, updated_at, last_synced_at)
-  - [ ] 통계 반환 (added, updated)
+- [x] `backend/batch/sync_jira.py` 작성
+  - [x] `sync_jira_incremental()` 함수
+  - [x] sync_history에서 마지막 성공 시간 조회
+  - [x] JiraClient로 증분 업데이트 조회 (`updated > last_sync`)
+  - [x] PostgreSQL에 업데이트
+    - [x] 신규 문서: INSERT
+    - [x] 기존 문서: UPDATE (title, content, updated_at, last_synced_at)
+  - [x] 통계 반환 (added, updated)
 
 ### Confluence 증분 동기화
-- [ ] `backend/batch/sync_confluence.py` 작성
-  - [ ] `sync_confluence_incremental()` 함수
-  - [ ] sync_history에서 마지막 성공 시간 조회
-  - [ ] ConfluenceClient로 증분 업데이트 조회
-  - [ ] PostgreSQL에 업데이트
-  - [ ] 통계 반환
+- [x] `backend/batch/sync_confluence.py` 작성
+  - [x] `sync_confluence_incremental()` 함수
+  - [x] sync_history에서 마지막 성공 시간 조회
+  - [x] ConfluenceClient로 증분 업데이트 조회
+  - [x] PostgreSQL에 업데이트
+  - [x] 통계 반환
+- [x] 배치 로컬 테스트 (dry-run 및 실제 실행 확인)
 
 ### 삭제된 문서 감지 및 처리
-- [ ] `backend/batch/detect_deleted.py` 작성
-  - [ ] `detect_and_mark_deleted(source)` 함수
-  - [ ] Jira/Confluence에서 현재 모든 문서 ID 조회
-  - [ ] PostgreSQL의 문서 ID와 비교
-  - [ ] 차집합 → `UPDATE documents SET deleted=True`
-  - [ ] 통계 반환 (deleted_count)
+- [x] `backend/batch/detect_deleted.py` 작성
+  - [x] `detect_and_mark_deleted(source)` 함수
+  - [x] Jira/Confluence에서 현재 모든 문서 ID 조회
+  - [x] PostgreSQL의 문서 ID와 비교
+  - [x] 차집합 → `UPDATE documents SET deleted=True`
+  - [x] 통계 반환 (jira_deleted, confluence_deleted, total_deleted)
 
 ### 텍스트 청킹 및 임베딩
-- [ ] `backend/batch/process_chunks.py` 작성
-  - [ ] `process_document_chunks(document_ids)` 함수
-  - [ ] 각 문서에 대해:
-    - [ ] 텍스트 청킹 (RecursiveCharacterTextSplitter)
-    - [ ] 기존 청크 삭제 (document_chunks 테이블)
-    - [ ] 새 청크 INSERT
-    - [ ] 임베딩 생성 (배치 100개씩)
-    - [ ] 벡터 리스트 반환
+- [x] `backend/batch/process_chunks.py` 작성
+  - [x] `process_document_chunks(document_ids)` 함수
+  - [x] 각 문서에 대해:
+    - [x] 텍스트 청킹 (RecursiveCharacterTextSplitter)
+    - [x] 기존 청크 삭제 (document_chunks 테이블)
+    - [x] 새 청크 INSERT
+    - [x] 임베딩 생성 (배치 100개씩)
+    - [x] 벡터 리스트 반환
+  - [x] `force_reprocess` 옵션 지원
 
 ### FAISS 인덱스 업데이트
-- [ ] `backend/batch/update_faiss.py` 작성
-  - [ ] `update_faiss_index()` 함수
-  - [ ] Cloud Storage에서 기존 FAISS 인덱스 다운로드
-    - [ ] 없으면 새로 생성
-  - [ ] 삭제된 문서의 벡터 제거
-    - [ ] deleted=True인 문서의 faiss_index_id 조회
-    - [ ] FAISS에서 제거 (IndexIDMap 사용 권장)
-  - [ ] 새 벡터 추가
-    - [ ] `index.add(vectors)`
-    - [ ] faiss_index_id를 document_chunks에 업데이트
-  - [ ] 로컬에 저장
-  - [ ] Cloud Storage에 업로드
+- [x] `backend/batch/update_faiss.py` 작성
+  - [x] `update_faiss_index()` 함수
+  - [x] 로컬 FAISS 인덱스 로드 (없으면 새로 생성)
+  - [x] 삭제된 문서의 벡터 제거
+    - [x] deleted=True인 문서의 faiss_index_id 조회
+    - [x] 인덱스 재빌드로 제거 처리
+  - [x] 새 벡터 추가
+    - [x] `index.add(vectors)`
+    - [x] faiss_index_id를 document_chunks에 업데이트
+  - [x] 로컬에 저장
+  - [x] `rebuild_faiss_index()` 전체 재빌드 함수
+  - [ ] Cloud Storage에 업로드 (Week 8 배포 시 진행)
 
 ### 배치 로그 저장
-- [ ] `backend/batch/main.py`에 로그 저장 로직 추가
-  - [ ] 배치 시작/종료 시간
-  - [ ] 처리된 문서 수 (added, updated, deleted)
-  - [ ] 에러 메시지
-  - [ ] 로그 파일 생성 (`YYYY-MM-DD.log`)
-  - [ ] Cloud Storage에 업로드 (`batch_logs/`)
+- [x] `backend/batch/main.py`에 로그 저장 로직 추가
+  - [x] 배치 시작/종료 시간
+  - [x] 처리된 문서 수 (added, updated, deleted)
+  - [x] 에러 메시지
+  - [x] 로그 파일 생성 (`logs/batch_YYYY-MM-DD.log`)
+  - [ ] Cloud Storage에 업로드 (`batch_logs/`) - Week 8 배포 시 진행
 
 ### 재시도 로직 구현
-- [ ] `backend/batch/retry_handler.py` 작성
-  - [ ] `retry_with_backoff(func, max_retries=3)` 데코레이터
-  - [ ] 실패 시 1시간 대기 후 재시도
-  - [ ] 최대 3회 재시도
-- [ ] sync_jira, sync_confluence에 데코레이터 적용
+- [x] `backend/batch/retry_handler.py` 작성
+  - [x] `retry_with_backoff(func, max_retries=3)` 데코레이터
+  - [x] 지수 백오프 (initial_delay, max_delay, backoff_factor)
+  - [x] 최대 3회 재시도
+  - [x] `RetryError`, `RetryContext` 클래스
+- [x] sync_jira, sync_confluence에 데코레이터 적용 (`sync_jira_with_retry`, `sync_confluence_with_retry`)
+
+### 배치 CLI 옵션 확장
+- [x] `--full-sync`: 청킹 및 FAISS 업데이트 포함
+- [x] `--rebuild-faiss`: FAISS 인덱스 전체 재빌드
+- [x] `--no-deletions`: 삭제 감지 스킵
+- [x] `--no-retry`: 재시도 로직 비활성화
 
 ### 배치 로컬 테스트
-- [ ] 로컬에서 배치 실행
-  - [ ] `python -m batch.main --source all`
-- [ ] 증분 업데이트 확인
-  - [ ] Jira/Confluence에서 문서 수정 후 재실행
-  - [ ] PostgreSQL에서 updated_at 확인
-- [ ] 삭제 감지 확인
-  - [ ] 테스트 문서 삭제 후 재실행
-  - [ ] deleted=True 확인
-- [ ] FAISS 인덱스 업데이트 확인
-  - [ ] Cloud Storage에 업로드 확인
+- [x] 로컬에서 배치 실행
+  - [x] `python -m batch.main --source all`
+  - [x] `python -m batch.main --source confluence --dry-run`
+- [x] 증분 업데이트 확인
+  - [x] Jira/Confluence에서 문서 수정 후 재실행
+  - [x] PostgreSQL에서 updated_at 확인
+- [x] 삭제 감지 확인
+  - [x] 테스트 문서 삭제 후 재실행
+  - [x] deleted=True 확인
+  - [x] Confluence CQL 응답 ID 파싱 버그 수정
+- [x] FAISS 인덱스 업데이트 확인 (`--full-sync` 옵션)
+  - [x] `python -m batch.main --rebuild-faiss` 테스트
 
 ### Week 5 마무리
-- [ ] 코드 리뷰 및 리팩토링
-- [ ] 배치 통합 테스트 작성
-- [ ] 배치 실행 로그 분석
-- [ ] Git 커밋 (`Week 5 완료: 배치 프로세스`)
+- [x] 코드 리뷰 및 리팩토링
+- [x] 배치 통합 테스트 작성 (31개 테스트 통과)
+- [x] 배치 실행 로그 분석
+- [x] Git 커밋 (`Week 5 완료: 배치 프로세스`)
 
 ---
 
